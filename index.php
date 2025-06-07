@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -26,6 +25,7 @@
         <div class="square" style="background-color: var(--burnt-sienna);"></div>
         <div class="square" style="background-color: var(--earth-yellow);"></div>
     </div>    
+    <?php include 'shared/footer.php';?>
 </body>
 </html>
 <script src="utils.js"></script>
@@ -69,6 +69,5 @@ function postNewMessage(){
 
 
 setInterval(postNewMessage, 7000)
-
 
 </script>
