@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="en-UK">
+<head>
+	<meta charset="utf-8"/>
+	<title id="title">Tacks</title>
+	<meta name="viewport" content="width=device-width"/>
+<style>
+:root{
+	--white: #171717;
+	--black: #f5f1ec;
+	--whiteAccent: #DDD;
+	--ascii: #E1D8C1;
+	--feature: coral;
+}
+.light{
+	--black: #171717;
+	--white: #f5f1ec;
+	--whiteAccent: #DDD;
+	--ascii: #5c5b59;
+	--feature: coral;
+}
+.dark{
+	--white: #171717;
+	--black: #f5f1ec;
+	--whiteAccent: #DDD;
+	--ascii: #E1D8C1;
+	--feature: coral;
+}
+body{
+	width: 100vw;
+	text-align: center;
+	background-color: var(--white);
+	color: var(--black);
+	font-family:monospace;
+	margin: 0px;
+	min-height: 100vh;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+.dark-mode{
+	background-color: var(--black);
+	color: var(--white);
+}
+p.tps{
+	font-style: italic;
+	font-size: 14px;
+	margin: 0px;
+}
+p.ticker{
+	font-size: 14px;
+	margin-top: 1px;
+	padding: 0px;
+}
+h1 {
+	text-align: center;
+	color: var(--black);
+}
+h1.title{
+	text-align: center;
+	color:  vaR(--black);
+	font-size: 48px;
+	margin: 0px;
+}
+h2 {
+	font-size: 24px;
+	margin: 8px;
+	color: var(--black);
+}
+button{
+	font-size: 16px;
+	padding: 8px;
+	margin: 4px;
+	color: var(--white);
+	background-color: var(--black);
+	transition-duration: 0.2s;
+	font-family: monospace;
+	font-weight: bold;
+}
+button:hover{
+	background-color: var(--feature);
+
+}
+label{
+	font-size: 32px;
+	color: var(--black);
+	padding: 12px;
+	font-family: monospace;
+}
+label.small{
+	font-size: 16px;
+	padding: 2px;
+}
+footer {
+	position: relative;
+	height: 100px;
+	width: 100%;
+	text-align: center;
+	display: flex;
+	flex-direction: column-reverse;
+	z-index: 10;
+}
+div.widget{
+	background-color: var(--white);
+	border: solid 1px var(--black);
+	min-width: 250px;
+	width: fit-content;
+	padding: 12px;
+	margin: 12px;
+	border-radius: 4px;
+	text-align: center;
+	position: relative;
+	
+	&.buy{
+		top: -180px;
+	}
+}
+#ascii{
+	width: 100vw;
+	overflow-x: hidden;
+	position: relative;
+	margin: 0px;
+	color: var(--ascii);
+}
+.notification{
+	color: var(--white);
+	padding: 10px;
+	font-family: monospace;
+	transition-duration: 0.2s;
+	z-index: 10;
+	width: fit-content;
+	pointer-events: none;
+}
+.notification.show{
+	opacity: 0.9;
+}
+.notification.hide{
+	opacity: 0;
+}
+.slice{
+	width: 100%;
+	height: 201px;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+}
+canvas{
+	height: 200px;
+	width: 100vw;
+}
+div.line{
+	width: 100%;
+	height: 1px;
+	background-color: var(--ascii);
+}
+
+
+.marquee {
+	margin: 0 auto;
+	white-space: nowrap;
+	overflow: hidden;
+	position: relative;
+	width: 100%;
+	padding-top: 1px;
+}
+
+.marquee span {
+	display: inline-block;
+	padding-left: 100%;
+	animation: marquee 17s linear infinite;
+}
+
+.marquee2 span {
+	animation-delay: 17s;
+}
+
+@keyframes marquee {
+	0% {
+		transform: translate(0, 0);
+	}
+	100% {
+		transform: translate(-100%, 0);
+	}
+}
+
+</style>
+</head>
+<! ========================================================================= >
+<body>
+	<div style="height: 290px">
+		<pre id="ascii" style="z-index: -1;"></pre>
+		<div class="line"></div>
+		<div id="tickerContainer">
+		<p class="marquee">
+			<span id="ticker"></span>
+		</p>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center; width: 100%">
+			<div class="widget buy">
+				<h1 class="title">Tacks</h1>
+				<p style="color: var(--black); margin-top: 0px;">A Lesser Paperclips</p>
+				<br>
+				<p class="tps" style="text-align:center" id="tpsLbl">Click to increment.</p>
+				<label id="tacksLbl">0</label>
+				<br>
+				<button id="btn" style="margin-top: 24px; width: 128px">Boop</button>
+			</div>
+		</div>
+	</div>
+	<div class="line"></div>
+	<div id="tackSlice" class="slice">
+		<canvas id="tackCanvas"></canvas>
+	</div>
+	<div class="line"></div>
+	
+	<h2> Upgrades & Automation</h2>
+	
+	<div style="display: flex; flex-direction: column; width: 100%">
+		<div style="width: 100vw; display: flex; max-width: 100vw; flex-direction: column">
+			<div class="line"></div>
+			<div id="pointerSlice" class="slice">
+				<canvas id="pointerCanvas"></canvas>
+				<div class="widget buy">
+					<button id="pointerBtn">Buy Extra Finger</button>
+					<div>
+						<label class="small">+0.25 per click</label> <br>
+						<label class="small">Cost: 20</label>
+						<br>
+						<label class="small">Owned:<label class="small" id="pointersOwnedLbl">0</label></label>
+					</div>
+				</div>
+			</div>
+			<div class="line"></div>
+			<div id="workerSlice" class="slice">
+				<canvas id="workerCanvas"></canvas>
+				<div class="widget buy">
+					<button id="workerBtn">Buy Worker</button>
+					<div>
+						<label class="small">+0.4 per second</label><br>
+						<label class="small">Cost: 100</label>
+						<br>
+						<label class="small">Owned:<label class="small" id="workersOwnedLbl">0</label></label>
+					</div>
+				</div>
+			</div>
+			<div class="line"></div>
+			<div id="printerSlice" class="slice">
+				<canvas id="printerCanvas"></canvas>
+				<div class="widget buy">
+					<button id="printerBtn">Buy 3D Printer</button>
+					<div>
+						<label class="small">+1 per second</label><br>
+						<label class="small">Cost: 400</label>
+						<br>
+						<label class="small">Owned:<label class="small" id="printersOwnedLbl">0</label></label>
+					</div>
+				</div>
+			</div>
+			<div class="line"></div>
+			<div id="dropperSlice" class="slice">
+				<canvas id="dropperCanvas"></canvas>
+				<div class="widget buy">
+					<button id="workerBtn">Buy Dropshipper</button>
+					<div>
+						<label class="small">+100 per minute (randomly)</label><br>
+						<label class="small">Cost: 1000</label>
+						<br>
+						<label class="small">Owned:<label class="small" id="droppersOwnedLbl">0</label></label>
+					</div>
+				</div>
+			</div>
+			<div class="line"></div>
+			<!-- TEMPLATE ==================================================================== -->
+			<div id="templateSlice" class="slice">
+				<canvas id="templateCanvas"></canvas>
+				<div class="widget buy">
+					<button id="templateBtn">Buy Template</button>
+					<div>
+						<label class="small">+X per Y</label><br>
+						<label class="small">Cost: Z</label>
+						<br>
+						<label class="small">Owned:<label class="small" id="templatesOwnedLbl">0</label></label>
+					</div>
+				</div>
+			</div>
+			<div class="line"></div>
+			<!-- TEMPLATE ==================================================================== -->
+		</div>
+	</div>
+	<div style="align-content: left; z-index: 1; position: fixed; bottom: 16px; left: 16px;">
+		<h2>Preferences</h2>
+		<button id="toggleDark">Toggle Theme</button><br>
+		<button id="saveGame">Save</button>
+		<button id="newGame">New</button>
+		<button id="cheat">Cheat</button>
+	</div>
+	<div style="text-align: right; position: fixed; right: 16px; bottom: 16px;">
+		<label class="small"; id="dateTimeLbl">DateTime</label>
+		<br>
+		<label class="small"; id="upTimeLbl">UpTime</label>
+		<br>
+		<label class="small"; id="playedTimeLbl">PlayedTime</label>
+		<br>
+		<p>Add more debug stuff.</p>
+	</div>
+	<div id="notificationContainer" style="pointer-events: none; position: fixed; display: flex; bottom: 32px; text-align: center; align-items: center; width: 100%; flex-direction: column-reverse;">
+	</div>
+<footer style="pointer-events: none; padding-bottom: 16px;">
+	<label class="small" id="copyright"></label>	
+	<br>
+	<label class="small" id="versionLbl"></label>
+</footer>
+
+
+</body>
+<script>
+
+/*=========================================================================
+
+== TO-DO ==
+✓ Cleaned up some code
+✓ Implemented 3D printer w. manual frame animation
+- Start dividing up the files maybe. This is getting ridiculous
+- Implement cost inflation
+- Fix printer positioning - adjust exclusion zone code to allow for padding.
+- Sort out string storage 	i.e: preferences.theme?'1':'0'; etc.
+- Tool tips and dynamic HTML
+- Finalise progression ideas
+
+== Tackonomics ==
+A rework of the Tack in/out system. Already well overdue I reckon.
+Needs to work nicely with centralised data fields.
+Ensure it scales so laggable scale of ownership isn't attainable.
+
+== Politacks ==
+Worm your way into politics by buying off government officials, lobbying for bills, and funding wars abroad.
+Basically becomes a whole other game akin to like, risk.
+An ASCII board room could be really cool. Like a separate screen entirely.
+
+== Progression ==
+Finger 		Increase per click
+Scavenger	Increase per second
+Dropshipper	Increase per minute (randomly)
+3D Printer	Increase per second
+Warehouse Upgrade	Intro to commercial industry
+Workers		Increase per second (during day only: pending labour law change)
+R&D Upgrade		Branches off to researching new methods of production - A research/tech tree?
+Board Room Upgrade	Opens up a whole coruption line of stuff
+
+Beyond this it could go anywhere.
+
+An interactable ASCII research tree. Yes please.
+I need to nail tooltips and alt windows and stuff first though.
+
+Achievements would also be cool. Need to consider the impact on SaveData though.
+
+WORKS ON CANVAS
+─│┌┐└┘├┤┬┴┼═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬▀▄█▌▐■▬▲►▼◄◦☺☻●░▒▓₸
+=========================================================================*/
+
+// #region Data
+
+/*=========================================================================
+
+VERSIONING
+Major 0 for pre-release, 1 for release
+Minor: Increment for playable versions.
+Build: Defined by feature additions. Add 'a' or 'b' for alphas and beta respectively.
+Revision: Don't really need. But would increment per commit.
+Date: Formatted as 'YY.MM'.
+
+=========================================================================*/
+
+const MAJOR = "0";
+const MINOR = "2";
+const BUILD = "4a";
+const REVISION = ""; //add decimal if using.
+
+function getDateArray(){
+	//return as YY.MM
+	const cd = new Date();
+	var y = cd.getFullYear();
+	var m = cd.getMonth() + 1; //zero indexed
+	if(m <= 9) m = "0" + m; //add zero to front of month (9 -> 09)
+	var d = cd.getDate();
+	return (`${d}/${m}/${y}`);
+}
+
+function getVersionDate(){
+	var date = getDateArray();
+
+	const re = /^(3[01]|[12][0-9]|0?[1-9])(\/|-)(1[0-2]|0[1-9])\2([0-9]{2})?[0-9]{2}$/;
+	var r = date.toString(re);
+	return (`${r[8]}${r[9]}.${r[3]}${r[4]}`);
+}
+
+function setCopyright(){
+	const ra = "© Ryan Appleyard ";
+	let y = new Date().getFullYear();
+	updateLabel["copyright"](ra + romanize(y));
+}
+
+// taken from https://blog.stevenlevithan.com/archives/javascript-roman-numeral-converter
+function romanize(num) {
+  var lookup = {M:1000,CM:900,D:500,CD:400,C:100,XC:90,L:50,XL:40,X:10,IX:9,V:5,IV:4,I:1},roman = '',i;
+  for ( i in lookup ) {
+    while ( num >= lookup[i] ) {
+      roman += i;
+      num -= lookup[i];
+    }
+  }
+  return roman;
+}
+
+const VERSION_DATE = getVersionDate();
+
+function getVersion(){
+	var V = `v${MAJOR}.${MINOR}.${BUILD}${REVISION}-${VERSION_DATE}`;
+	if(!V) return "Error fetching Version";
+	return V;
+}
+
+const VERSION = getVersion();
+
+const THEME = {
+	DARK: 'dark',
+	LIGHT: 'light'
+}
+
+// Internal Data
+let _tacks = 0;
+let _tacksPerSecond = 0;
+let _tacksPerClick = 1;
+
+let _pointersOwned = 0;
+let _workersOwned = 0;
+let _printersOwned = 0;
+
+let _totalTacksEarned = 0;
+let _totalHandmadeTacks = 0;
+let _clicks = 0;
+
+let _lastKnownTheme;
+
+const canvasHeight = 200;
+
+const DATA = {
+	version: VERSION,
+	seed: 0,
+	tacks: 0,
+	clicks: 0,
+	tacksPerClick: 0,
+	totalHandmadeTacks: 0,
+	totalTacksEarned: 0,
+	pointersOwned: 0,
+	workersOwned: 0,
+	printersOwned: 0,
+	playedTime: 0,
+	theme: _lastKnownTheme || THEME.LIGHT
+}
+
+// Light and Dark refer to the themes they are paired with.
+const COLOURS = {
+	green: {
+		light: "#035F32",
+		dark: "#43FFAE"
+	},
+	red: "#FC5130",
+	text: {
+		light: "#121212",
+		dark: "#F7F7F7"
+	},
+	ascii: {
+		light: "#5c5b59",
+		dark: "#B1A688"
+	},
+	base: {
+		light: "#f5f1ec",
+		dark: "#171717"
+	},
+	baseInv: {
+		light: "#171717",
+		dark: "#f5f1ec"
+	}
+}
+
+let AUTO_VALUE = {
+	pointer: 0.25,
+	worker: 0.4,
+	printer: 1,
+}
+
+let COST = {
+	pointer: 20,
+	worker: 100,
+	printer: 400,
+}
+
+const FPS = 1000 / 32;
+let _upTimeElapsed = 0;
+let _playedTimeElapsed = 0;
+let startTime = Date.now();
+
+const notificationContainer = l("notificationContainer");
+
+const updateLabel = {
+	version: (val) => { l("versionLbl").textContent = val; },
+	tacks: (val) => { l("tacksLbl").textContent = val; },
+	tps: (val) => { l("tpsLbl").textContent = val },
+	pointersOwned: (val) => { l("pointersOwnedLbl").textContent = val; },
+	workersOwned: (val) => { l("workersOwnedLbl").textContent = val; },
+	printersOwned: (val) => { l("printersOwnedLbl").textContent = val; },
+	title: (val) => { l("title").textContent = val; },
+	dateTime: (val) => { l("dateTimeLbl").textContent = val; },
+	upTime: (val) => { l("upTimeLbl").textContent = val; },
+	playTime: (val) => { l("playedTimeLbl").textContent = val; },
+	copyright: (val) => { l("copyright").textContent = val; },
+};
+
+// #endregion
+
+// #region Save Logic
+
+function newGame() {
+	localStorage.removeItem("tacksSave");
+	loadGame(true);
+	resetTime();
+	subtractGuy(workers.length);
+	subtractPointer(pointers.length);
+	subtractPrinter(printers.length);
+	onRefresh();
+	printNotification("New Game Started", COLOURS.green);
+}
+
+function resetTime(){
+	_upTimeElapsed = 0;
+	_playedTimeElapsed = 0;
+}
+
+const FIXED_KEY = "tackstack-key123"; // Shared secret
+const FIXED_SALT = new TextEncoder().encode("tackstack-salt");
+
+// Derive a persistent key using PBKDF2
+async function getKey() {
+	if (!window.encryptionKey) {
+		const keyMaterial = await crypto.subtle.importKey(
+			"raw",
+			new TextEncoder().encode(FIXED_KEY),
+			{ name: "PBKDF2" },
+			false,
+			["deriveKey"]
+		);
+
+		window.encryptionKey = await crypto.subtle.deriveKey(
+			{
+				name: "PBKDF2",
+				salt: FIXED_SALT,
+				iterations: 100000,
+				hash: "SHA-256"
+			},
+			keyMaterial,
+			{ name: "AES-GCM", length: 256 },
+			false,
+			["encrypt", "decrypt"]
+		);
+	}
+	return window.encryptionKey;
+}
+
+async function saveGame(autosave) {
+
+	await saveIntoData();
+
+	const key = await getKey();
+	const iv = crypto.getRandomValues(new Uint8Array(12));
+	const encoded = new TextEncoder().encode(JSON.stringify(DATA));
+	const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
+
+	const encryptedData = {
+		iv: Array.from(iv),
+		cipherText: Array.from(new Uint8Array(encrypted))
+	};
+
+	localStorage.setItem("tacksSave", JSON.stringify(encryptedData));
+
+	if (!autosave) printNotification("Saved Game", getColor(COLOURS.green));
+}
+
+function autosaveGame() {
+	saveGame(true);
+	printNotification("Autosaved", COLOURS.green, 2000);
+}
+
+async function loadGame(newGame) {
+
+	if(newGame){
+		_tacksPerSecond = 0;
+		_tacksPerClick = 1;
+		DATA.seed = generateSeed();
+		_tacks =  0;
+		_pointersOwned = 0;
+		_workersOwned = 0;
+		_printersOwned = 0;
+		_playedTimeElapsed = 0;
+		DATA.version = getVersion();
+		DATA.theme = _lastKnownTheme || THEME.LIGHT; // Is there a way to get this to be system default?
+		onRefresh();
+		printNotification("New Game!", COLOURS.green);
+		return;
+	}
+
+	const raw = localStorage.getItem("tacksSave");
+	if (!raw) return;
+
+	try {
+		const encryptedData = JSON.parse(raw);
+		const key = await getKey();
+		const iv = new Uint8Array(encryptedData.iv);
+		const cipherText = new Uint8Array(encryptedData.cipherText);
+
+		const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipherText);
+		const json = new TextDecoder().decode(decrypted);
+		const parsed = JSON.parse(json);
+
+		DATA.seed = parsed.seed || generateSeed();
+		_tacks = parsed.tacks || 0;
+		_pointersOwned = parsed.pointersOwned || 0;
+		_workersOwned = parsed.workersOwned || 0;
+		_printersOwned = parsed.printersOwned || 0;
+		_playedTimeElapsed = parsed.playedTime || 0;
+		DATA.version = parsed.version || getVersion();
+		_lastKnownTheme = parsed.theme || THEME.LIGHT;
+		saveIntoData();
+		onRefresh();
+		printNotification("Game Loaded", COLOURS.green);
+	} catch (err) {
+		console.error("Decryption failed:", err);
+	}
+}
+
+async function saveIntoData(){
+	DATA.tacks = _tacks;
+	DATA.pointersOwned = _pointersOwned;
+	DATA.printersOwned = _printersOwned;
+	DATA.workersOwned = _workersOwned;
+	DATA.playedTime = _playedTimeElapsed;
+	DATA.theme = _lastKnownTheme;
+
+	return;
+}
+
+function bootstrap(){
+	setCopyright();
+	updatePointer();
+	updateWorker();
+	updatePrinter();
+	updateTack();
+	loadGame();
+
+	setInterval(refreshDisplay, 1000 / FPS);
+	setInterval(secondDisplay, 1000);
+	setInterval(autosaveGame, 600000);
+	setInterval(animationHandler, 1000);
+
+
+	updateLabel["version"](VERSION);
+}
+
+
+// #endregion
+
+// #region Buttons
+
+l("btn").addEventListener("click", context =>{ addTack(_tacksPerClick);});
+l("pointerBtn").addEventListener("click", context =>{ buy("pointer"); });
+l("workerBtn").addEventListener("click", context =>{ buy("worker"); });
+l("printerBtn").addEventListener("click", context => { buy("printer"); });
+l("toggleDark").addEventListener("click", function(){ toggleTheme(); });
+l("saveGame").addEventListener("click", function(){ saveGame(); })
+l("newGame").addEventListener("click", function(){ newGame(); })
+l("cheat").addEventListener("click", function(){
+	addTack(1000000);
+	buy("worker", 20, true);
+	buy("pointer", 20, true);
+});
+
+// #endregion
+
+// #region Game Logic
+
+async function onRefresh(){
+	forceUpdateTheme();
+	await repopulate();
+}
+
+async function repopulate(){
+	// clearCanvas(pointerCanvas);
+	// clearCanvas(workerCanvas);
+	subtractGuy(workers.length);
+	subtractPointer(pointers.length);
+	subtractPrinter(printers.length);
+	// subtractPrinter(printers.length);
+	populateGuys();
+	populatePointers();
+	populatePrinter();
+}
+
+function clearCanvas(canvas){
+	const ctx = canvas.getContext("2d");
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function addTack(amount){
+	_totalTacksEarned += amount;
+	_tacks += amount;
+	createTack(amount);
+}
+
+function addToLabel(name, amount) {
+	const label = l(name + "Lbl");
+
+	if (!label) {
+		console.warn(`Label element not found: ${name}Lbl`);
+		return;
+	}
+
+	let currentVal = parseFloat(label.textContent);
+	if (isNaN(currentVal)) currentVal = 0;
+
+	const newVal = currentVal + amount;
+	label.textContent = Math.floor(newVal);
+}
+
+function subtractTacks(amount){ _tacks -= amount; }
+
+function canAfford(price){ return true ? price <= parseInt(_tacks, 10) : false; }
+
+function getPrice(type){ return COST[type]; }
+
+function buy(type, amount = 1, cheat = false){
+	let price = cheat? 0 : getPrice(type);
+	if(canAfford(price)){
+		subtractTacks(price);
+		create(type, amount);
+		printNotification("Bought: " + amount + "x " + type, COLOURS.text, 2000);
+		return true;
+	}
+	else{
+		printNotification("Can't afford another " + type, COLOURS.red, 2000);
+		return false;
+	}
+}
+
+function inflatePrices(type){
+	// work out the curve you want to implement and use gates to inflate the prices.
+	// Unless compounding suffices?
+	// It just has to scale faster than you can grow, so you start relying on the following mechanics.
+}
+
+function create(type, amount){
+	switch(type){
+		case "worker":
+			createWorker(amount);
+			break;
+		case "pointer":
+			createPointer(amount);
+			break;
+		case "printer":
+			createPrinter(amount);
+			break;
+	}
+}
+
+function calculateTPS(){
+	_tacksPerSecond = (AUTO_VALUE.worker * _workersOwned) +
+			(AUTO_VALUE.printer * _printersOwned);
+			// (AUTO_VALUE.worker * _workersOwned) +
+			// (AUTO_VALUE.worker * _workersOwned) +
+			// (AUTO_VALUE.worker * _workersOwned) +
+}
+
+function calculateTPC(){
+	_tacksPerClick = (AUTO_VALUE.pointer * _pointersOwned) + 1;
+}
+// #endregion
+
+// #region Utility
+
+// Thank you Orteil!!
+function l(what) { return document.getElementById(what);}
+function choose(arr) { return arr[Math.floor(Math.random()*arr.length)];}
+function randomFloor(x) {if ((x%1)<Math.random()) return Math.floor(x); else return Math.ceil(x);}
+
+function generateSeed(){
+	var chars = 'abcdefghijklmnopqrstuvwxyz'.split('');
+	var str = '';
+	for(var i=0; i<5; i++){ str += choose(chars); }
+	return str;
+}
+
+function getValidPosition(canvas, exclusion, pb = 0, pt = 0, pl = 0, pr = 0){
+	let x, y;
+    do {
+       	x = Math.random() * (canvas.width - 80);
+       	y = Math.random() * (canvas.height - 20);
+    } while (
+        x > exclusion.x + pl &&
+        x < exclusion.x + exclusion.width - pr &&
+        y > exclusion.y + pt &&
+        y < exclusion.y + exclusion.height - pb
+    );
+    return { x, y };
+}
+
+// Why did I make these??
+function getValidPositionX(canvas, exclusion, pb = 0, pt = 0, pl = 0, pr = 0){
+	let both = getValidPosition(canvas, exclusion, pb, pt, pl, pr);
+	return both[0];
+}
+
+function getValidPositionY(canvas, exclusion, pb = 0, pt = 0, pl = 0, pr = 0){
+	let both = getValidPosition(canvas, exclusion, pb, pt, pl, pr);
+	return both[1];
+}
+
+function debounce(func, delay) {
+	let timeoutId;
+	return (...args) => {
+		clearTimeout(timeoutId);
+		timeoutId = setTimeout(() => func.apply(this, args), delay);
+	};
+}
+
+
+function wiggle(g, mouse, yMove, amplification = 1){
+	
+	const dx = g.homeX - mouse.x;
+	const dy = g.homeY - mouse.y;
+	const dist = Math.sqrt(dx * dx + dy * dy);
+
+	// Perlin noise wiggle
+	const noiseX = perlin(time + g.id * 10, 0, 0) * 2 - 1; // [-1, 1]
+	const noiseY = perlin(0, time + g.id * 10, 0) * 2 - 1;
+	const wiggleX = noiseX * WIGGLE_AMPLITUDE;
+	const wiggleY = noiseY * WIGGLE_AMPLITUDE;
+
+	let sinY = sinWave(wiggleY * yMove, 10);
+
+	let offsetX = wiggleX;
+	let offsetY = wiggleY + sinY;
+
+	// If within repulsion radius, push away from mouse
+	if (dist < REPULSION_RADIUS && dist > 0.01) {
+	const nx = dx / dist;
+	const ny = dy / dist;
+	const repulseStrength = (REPULSION_RADIUS - dist) / REPULSION_RADIUS * REPULSION_FORCE;
+	offsetX += nx * repulseStrength;
+	offsetY += ny * repulseStrength;
+	}
+
+	let scale = 1;
+	if(dist < SCALE_RADIUS){
+		const t= 1 - dist / SCALE_RADIUS;
+		scale = 1 + t * ((W_MAX_FONT_SIZE / W_BASE_FONT_SIZE) -1);
+	}
+
+	const drawX = g.homeX + offsetX * amplification;
+	const drawY = g.homeY + offsetY * amplification;
+	
+
+	const drawVector = [drawX, drawY, scale, sinY];
+
+	return drawVector;
+}
+
+function sinWave(radian, radius){ return Math.sin(radian) * radius; }
+
+// #endregion
+
+// #region Display
+
+// Called at FPS (1000 / 30);
+function refreshDisplay(){
+	calculateTPS();
+	calculateTPC();
+	_tacks += _tacksPerSecond / FPS;
+	updateLabel["tacks"](numberWithCommas(Math.floor(_tacks)));
+	updateLabel["tps"](_tacksPerSecond.toFixed(2) + " tps");
+	updateLabel["dateTime"](new Date().toLocaleString());
+	updateLabel["playTime"](`Played Time: ${convertTime(_playedTimeElapsed)}`);
+	updateLabel["upTime"](`Up Time: ${convertTime(_upTimeElapsed)}`);
+	updateLabel["workersOwned"](_workersOwned);
+	updateLabel["pointersOwned"](_pointersOwned);
+	updateLabel["printersOwned"](_printersOwned);
+}//buffalo
+
+// Called per second
+function secondDisplay(){
+	createTack(_tacksPerSecond);
+	updateLabel["title"](`${Math.floor(_tacks)} Tacks!`);
+	_upTimeElapsed++;
+	_playedTimeElapsed++;
+	saveIntoData();
+}
+
+function toggleTheme(){
+	document.body.classList.toggle("light");
+	updateTheme();
+}
+
+function updateTheme(){
+	if(getCurrentTheme() === "light"){
+		_lastKnownTheme = THEME.LIGHT;
+	}
+	else{
+		_lastKnownTheme = THEME.DARK;
+	}
+}
+
+function forceUpdateTheme(){
+	if(_lastKnownTheme != getCurrentTheme()){ toggleTheme(); }
+}
+
+function getCurrentTheme(){
+	return isLightMode() ? THEME.LIGHT: THEME.DARK;
+}
+
+// Expand on this to make it work for achievements.
+function printNotification(message, color, duration = 3000){
+	const note = document.createElement("div");
+	note.className = "notification";
+	note.textContent = message;
+	note.style.color = getColor(color);
+	note.style.backgroundColor = getColor(COLOURS.base);
+	note.style.border = "solid 1px " + getColor(COLOURS.baseInv);
+	note.style.fontWeight = "bold";
+	note.style.zIndex = "20";
+
+	notificationContainer.appendChild(note);
+
+	setTimeout(() =>{
+		note.classList.remove("show");
+		note.classList.add("hide");
+		setTimeout(() => note.remove(), 500);
+	}, duration);
+}
+
+// space for tooltips I guess
+
+function getColor(type) {
+    if (typeof type === "string") return type;
+    return isLightMode() ? type.light : type.dark;
+}
+
+function isLightMode() {
+    return document.body.classList.contains("light");
+}
+
+window.addEventListener("resize", debounce(resizeWindow, 150));
+
+function resizeWindow(){
+	resizeCanvas(workerCanvas, workers);
+	resizeCanvas(pointerCanvas, pointers);
+	resizeCanvas(tackCanvas, tacks);
+	resizeCanvas(printerCanvas, printers);
+}
+
+function resizeCanvas(canvas, collection) {
+	canvas.width = window.innerWidth;
+	const exclusion = getExclusion(canvas);
+
+	requestAnimationFrame(() => repopulate());
+
+	// requestAnimationFrame(() => {
+	// 	collection.forEach(g => {
+	// 		g.homeX = getValidPositionX(canvas, exclusion);
+	// 	});
+	// });
+}
+
+
+// #endregion
+
+// #region Perlin
+const perm = new Uint8Array(512);
+for (let i = 0; i < 256; i++) perm[i] = i;
+for (let i = 255; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [perm[i], perm[j]] = [perm[j], perm[i]];
+}
+for (let i = 0; i < 256; i++) perm[i + 256] = perm[i];
+
+function fade(t) {
+  return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+function lerp(a, b, t) {
+  return a + t * (b - a);
+}
+
+function grad(hash, x, y, z) {
+  const h = hash & 15;
+  const u = h < 8 ? x : y;
+  const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+  return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+}
+
+function perlin(x, y, z) {
+  const X = Math.floor(x) & 255;
+  const Y = Math.floor(y) & 255;
+  const Z = Math.floor(z) & 255;
+
+  x -= Math.floor(x);
+  y -= Math.floor(y);
+  z -= Math.floor(z);
+
+  const u = fade(x);
+  const v = fade(y);
+  const w = fade(z);
+
+  const A  = perm[X] + Y, AA = perm[A] + Z, AB = perm[A + 1] + Z;
+  const B  = perm[X + 1] + Y, BA = perm[B] + Z, BB = perm[B + 1] + Z;
+
+  return lerp(
+    lerp(
+      lerp(grad(perm[AA], x, y, z),
+           grad(perm[BA], x - 1, y, z), u),
+      lerp(grad(perm[AB], x, y - 1, z),
+           grad(perm[BB], x - 1, y - 1, z), u), v),
+    lerp(
+      lerp(grad(perm[AA + 1], x, y, z - 1),
+           grad(perm[BA + 1], x - 1, y, z - 1), u),
+      lerp(grad(perm[AB + 1], x, y - 1, z - 1),
+           grad(perm[BB + 1], x - 1, y - 1, z - 1), u), v),
+    w
+  );
+}
+
+const chars = "    ..:oO0@ ";
+const userScreen = l("ascii");
+let t = 0;
+let paused = false;
+
+function mapValueToChar(val) {
+  const normalized = (val + 1) / 2;
+  const index = Math.floor(normalized * (chars.length - 1));
+  return chars[index];
+}
+
+function renderFrame() {
+    if (!paused) {
+        let output = "";
+        const width = userScreen.clientWidth / 6;
+
+		if(width == 0) console.log("ISSUE");
+        const height = 18;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const value = perlin(x * 0.1, y * 0.1, t);
+        output += mapValueToChar(value);
+      }
+      output += "\n";
+    }
+
+    userScreen.textContent = output;
+    t += 0.01;
+  }
+}
+
+setInterval(renderFrame, FPS);
+
+// #endregion
+
+// #region Ascii Shared
+
+const WIGGLE_AMPLITUDE = 2; // max wiggle in pixels
+const WIGGLE_SPEED = 0.01;  // speed of wiggle
+const REPULSION_RADIUS = 450; // smaller radius so repulsion looks nicer
+const REPULSION_FORCE = 2; // how strongly guys get pushed away
+
+const MAX_SPRITE_COUNT = 256;
+
+const P_BASE_FONT_SIZE = 8;
+const W_BASE_FONT_SIZE = 12;
+const W_MAX_FONT_SIZE = 16;
+const P_MAX_FONT_SIZE = 13;
+const SCALE_RADIUS = 100;
+const ROT_RADIUS = 100; // UNUSED
+
+function getExclusion(canvas, height = 150, width = 300){
+	return {
+    x: canvas.width / 2 - 175,
+    y: canvas.height / 2 - 90,
+    width: width,
+    height: height,
+	};
+}
+
+function createSprite(sprite, canvas, collection, amount, animated = false, pb = 0, pt = 0, pl = 0, pr = 0){
+	populateSprite(amount, sprite, canvas, collection, animated, pb, pt, pl, pr);
+}
+
+function populateSprite(count, sprite, canvas, collection, animated, pb = 0, pt = 0, pl = 0, pr = 0){
+	const exclusion = getExclusion(canvas);
+	count = Math.min(count, MAX_SPRITE_COUNT);	
+
+	// I need to find a way to move this to a sort of universal draw function.
+	let spr;
+	
+	for (let i = 0; i < count; i++) {
+		spr = animated ? sprite[0] : sprite[Math.floor(Math.random() * sprite.length)];
+		const {x: X, y:Y} = getValidPosition(canvas, exclusion, pb, pt, pl, pr)
+		collection.push({
+			homeX: X,
+			homeY: Y,
+			id: i,
+			sprite: spr
+		});
+	}
+}
+
+// #endregion
+
+// #region Art
+
+//reformat to be a central source for ASCII art.
+
+const CHAR_TACK = [
+[ " Π ",
+  " T " ]];
+
+const CHAR_GUY = [
+[
+	"  o  ",
+	" /#\\ ",
+	" / \\ "
+],
+[
+	"  o  ",
+	" <#v ",
+	" / \\ "
+],
+[
+	"  o  ",
+	" <T> ",
+	" / \\ "
+],
+[
+	"  o  ",
+	" /#> ",
+	" / \\ "
+],
+[
+	"  o  ",
+	" /X\\ ",
+	" / \\ "
+],
+[
+	"  o  ",
+	" (Y) ",
+	" / \\ "
+],
+];
+
+const CHAR_POINTER = [[
+	 "   |  ",
+	 "r^^|  ",
+	"\\__|) "
+],
+[
+	 "  |   ",
+	 "r^'^  ",
+	"\\__|) "
+]];
+
+const CHAR_PRINTER = [
+	// First Layer
+ ["  ┌─┐ ",
+  "  │▒│ ",
+  "╔═╧═╧╗",
+  "║    ║",
+  "╠═╤■═╣",
+  "▀▀▀▀▀▀"],
+ ["  ┌─┐ ",
+  "  │▒│ ",
+  "╔═╧═╧╗",
+  "║    ║",
+  "╠══╤■╣",
+  "▀▀▀▀▀▀"],
+ ["  ┌─┐ ",
+  "  │▒│ ",
+  "╔═╧═╧╗",
+  "║    ║",
+  "╠═╤■═╣",
+  "▀▀▀▀▀▀"],
+ ["  ┌─┐ ",
+  "  │▒│ ",
+  "╔═╧═╧╗",
+  "║    ║",
+  "╠╤■══╣",
+  "▀▀▀▀▀▀"],
+
+ ["  ┌─┐ ",
+  "  │▒│ ",
+  "╔═╧═╧╗",
+  "╠╤■══╣",
+  "║ █▄ ║",
+  "▀▀▀▀▀▀"],
+ ["  ┌─┐ ",
+  "  │▒│ ",
+  "╔═╧═╧╗",
+  "╠═╤■═╣",
+  "║ █▄ ║",
+  "▀▀▀▀▀▀"],
+ ["  ┌─┐ ",
+  "  │▒│ ",
+  "╔═╧═╧╗",
+  "╠══╤■╣",
+  "║ █▄ ║",
+  "▀▀▀▀▀▀"],
+ ["  ┌─┐ ",
+  "  │▒│ ",
+  "╔═╧═╧╗",
+  "╠═╤■═╣",
+  "║ █▄ ║",
+  "▀▀▀▀▀▀"],
+];
+
+// #endregion
+
+// #region Pointers Render
+
+function populatePointers(){
+	populateSprite(_pointersOwned, CHAR_POINTER, pointerCanvas, pointers);
+}
+
+function createPointer(amount){
+	_pointersOwned += amount;
+	createSprite(CHAR_POINTER, pointerCanvas, pointers, amount);
+}
+
+const pointerCanvas = l("pointerCanvas");
+const pointerCtx = pointerCanvas.getContext("2d");
+pointerCanvas.width = window.innerWidth;
+pointerCanvas.height = canvasHeight;
+
+let pointerCount = 0;
+const pointerMouse = { x: 0, y: 0 }
+const pointers = [];
+
+pointerCanvas.addEventListener("mousemove", e => {
+    const rect = pointerCanvas.getBoundingClientRect(); // get canvas position & size
+    pointerMouse.x = e.clientX - rect.left; // mouse x relative to canvas
+    pointerMouse.y = e.clientY - rect.top;  // mouse y relative to canvas
+});
+
+function subtractPointer(amount = 1){
+	for(i = 0; i < amount; i++){
+		pointers.pop();
+	}
+}
+
+function drawPointer(pointerSprite, x, y, scale) {
+    const pointerFontSize = P_BASE_FONT_SIZE * scale;
+    const lineHeight = pointerFontSize;
+
+    pointerCtx.font = pointerFontSize + "px monospace";
+    pointerCtx.textBaseline = "top";
+    pointerCtx.fillStyle = getColor(COLOURS.ascii);
+
+    for (let i = 0; i < pointerSprite.length; i++) {
+        pointerCtx.fillText(pointerSprite[i], x, y + i * lineHeight);
+    }
+}
+
+
+
+function updatePointer() {
+    pointerCtx.clearRect(0, 0, pointerCanvas.width, pointerCanvas.height);
+    time += WIGGLE_SPEED;
+
+    pointers.forEach(p => {
+	const v = wiggle(p, pointerMouse, 1.2);
+        drawPointer(p.sprite, v[0], v[1], v[2]);
+    });
+    
+    requestAnimationFrame(updatePointer);
+}
+
+// #endregion
+
+// #region Guys Render
+
+function populateGuys(){
+	populateSprite(_workersOwned, CHAR_GUY, workerCanvas, workers);
+}
+
+function createWorker(amount){
+	_workersOwned += amount;
+	createSprite(CHAR_GUY, workerCanvas, workers, amount);
+}
+
+const workerCanvas = l("workerCanvas");
+const workerCtx = workerCanvas.getContext("2d");
+workerCanvas.width = window.innerWidth;
+workerCanvas.height = canvasHeight;
+
+const workerMouse = { x: 0, y: 0 };
+const workers = [];
+
+workerCanvas.addEventListener("mousemove", e => {
+	const rect = workerCanvas.getBoundingClientRect();
+	workerMouse.x = e.clientX - rect.left; // mouse x relative to canvas
+	workerMouse.y = e.clientY - rect.top;  // mouse y relative to canvas
+});
+
+function subtractGuy(amount = 1){
+	for(i = 0; i < amount; i++){
+		workers.pop();
+	}
+}
+
+function drawGuy(guySprite, x, y, scale) {
+	const fontSize = W_BASE_FONT_SIZE * scale;
+	const lineHeight = fontSize;
+
+	workerCtx.font = fontSize + "px monospace";
+	workerCtx.textBaseline = "top";
+	workerCtx.fillStyle = getColor(COLOURS.ascii);
+	for (let i = 0; i < guySprite.length; i++) {
+		workerCtx.fillText(guySprite[i], x, y + i * lineHeight);
+	}
+}
+
+let time = 0;
+
+function updateWorker() {
+	workerCtx.clearRect(0, 0, workerCanvas.width, workerCanvas.height);
+	time += WIGGLE_SPEED;
+
+	workers.forEach(g => {
+		const v = wiggle(g, workerMouse, 0);
+		drawGuy(g.sprite, v[0], v[1], v[2]);
+	});
+
+	requestAnimationFrame(updateWorker);
+}
+
+// #endregion
+
+// #region Printer Render
+
+function populatePrinter(){
+	populateSprite(_printersOwned, CHAR_PRINTER, printerCanvas, printers);
+}
+
+function createPrinter(amount = 1){
+	_printersOwned += amount;
+	createSprite(CHAR_PRINTER, printerCanvas, printers, amount, true);
+}
+
+const printerCanvas = l("printerCanvas");
+const printerCtx = printerCanvas.getContext("2d");
+printerCanvas.width = window.innerWidth;
+printerCanvas.height = canvasHeight;
+
+const PRNTR_BASE_FONT_SIZE = 12;
+const printerMouse = { x: 0, y: 0 };
+let printers = [];
+
+printerCanvas.addEventListener("mousemove", e => {
+	const rect = printerCanvas.getBoundingClientRect();
+	printerMouse.x = e.clientX - rect.left; // mouse x relative to canvas
+	printerMouse.y = e.clientY - rect.top;  // mouse y relative to canvas
+});
+
+function drawPrinter(printerSprite, x, y, scale, animated = false){
+	const printerFontSize = PRNTR_BASE_FONT_SIZE * scale;
+	const lineHeight = printerFontSize;// * 0.75;
+
+	printerCtx.font = `${printerFontSize}px monospace`;
+	printerCtx.textBaseline = "top";
+	printerCtx.fillStyle = getColor(COLOURS.ascii);	
+	
+	for(let i = 0; i < printerSprite.length; i++){
+		
+		f = Math.floor((frame + 1) % 8 );
+
+
+		spr = animated ? CHAR_PRINTER[f][i] : printerSprite[i];
+		printerCtx.fillText(spr, x , y + i * lineHeight);
+	}
+}
+
+function updatePrinter(){
+	// clearCanvas(printerCanvas);
+	printerCtx.clearRect(0, 0, printerCanvas.width, printerCanvas.height);
+
+	var pos = getValidPosition(printerCanvas, getExclusion(printerCanvas));
+
+	printers.forEach(p => {
+		const v = wiggle(p, printerMouse, 0.3, 0.2)
+		drawPrinter(p.sprite, v[0], v[1], v[2], true);
+	})
+
+	requestAnimationFrame(updatePrinter);
+}
+
+function subtractPrinter(amount = 1){
+	for(let i = 0; i < amount; i++){
+		printers.pop();
+	}
+}
+
+// #endregion
+
+// #region Tack Render
+
+function createTack(amount = 1) {
+	if(tacks.length >= MAX_SPRITE_COUNT) return;
+	createSprite(CHAR_TACK, tackCanvas, tacks, amount)
+}
+
+function populateTack(){
+	populateSprite(tackCount, CHAR_TACK, tackCanvas, tacks);
+}
+
+const tackCanvas = l("tackCanvas");
+const tackCtx = tackCanvas.getContext("2d");
+tackCanvas.width = window.innerWidth;
+tackCanvas.height = canvasHeight;
+
+const T_BASE_FONT_SIZE = 18;
+const yVelocity = 2;
+let tackCount = 0;
+const tackMouse = { x: 0, y: 0 };
+let tacks = [];
+
+function drawTack(tackSprite, x, y, scale) {
+	const tackFontSize = T_BASE_FONT_SIZE * scale;
+	const lineHeight = tackFontSize / 2;
+
+	tackCtx.font = `${tackFontSize}px monospace`;
+	tackCtx.textBaseline = "top";
+	tackCtx.fillStyle = getColor(COLOURS.ascii);
+
+	for (let i = 0; i < tackSprite.length; i++) {
+		tackCtx.fillText(tackSprite[i], x, y + i * lineHeight);
+	}
+}
+
+function updateTack() {
+	tackCtx.clearRect(0, 0, tackCanvas.width, tackCanvas.height);
+
+	tacks = tacks.filter(p => p.homeY < tackCanvas.height + 200);
+
+	tacks.forEach(p => {
+		p.homeY += Math.random() * yVelocity + 1;
+		const v = wiggle(p, tackMouse, 0);
+		drawTack(p.sprite, v[0], p.homeY - canvasHeight, v[2]);
+	});
+	
+	requestAnimationFrame(updateTack);
+}
+
+// #endregion
+
+// #region Animation Handler
+
+let frame = 0;
+
+function animationHandler(){
+	frame += 1;
+	if(frame>31){ frame = 0 }
+	// console.log(frame);
+}
+
+// #endregion
+
+// #region Naming & Formatting
+
+function convertTime(timeIn, detail = 3){
+	// This needs fixing, it's going up to like 100 minutes.
+	// I don't know why? Am I being stupid?
+	const hours = Math.floor(timeIn / 3600);
+	const minutes = Math.floor((timeIn % 36000) / 60 % 60);
+	const seconds = Math.floor(timeIn % 60);
+	
+	var str = "uh oh";
+	var bits = [];
+
+	if(detail >= 1) bits.push(hours + " hour" + ((hours==1)?"":"s"));
+	if(detail >= 2) bits.push(minutes + " minute" + ((minutes==1)?"":"s"));
+	if(detail >= 3) bits.push(seconds + " second" + ((seconds==1)?"":"s"));
+	
+	str = bits.join(', ');
+	return str;
+}
+
+// I need a new version of this.
+function numberWithCommas(x) {
+    x = x.toString();
+    var pattern = /(-?\d+)(\d{3})/;
+    while (pattern.test(x))
+        x = x.replace(pattern, "$1,$2");
+    return x;
+}
+
+function generateFactoryName(){
+	// randomly choose 2 (or 3?) words from lists that create a dumb name.
+	var str = '';
+	var list=[];
+	// First name
+	list.push(choose(['Something', 'Another', 'Cool']));
+
+	// Second
+	list.push(choose(['Something', 'Another', 'Cool']));
+
+	// Third
+	list.push(choose(['Inc.', 'Co.', 'Ltd.']));
+
+	str = list.join(' ');
+
+	return str;
+	
+}
+
+function generateWorkerName(){
+	// randomly choose a name from a list.
+	return "Winston";
+}
+
+function generateDropshipName(){
+	return "Lametown Express";
+	// Maybe? Choose random words to create a super cringe only shop name. 
+}
+
+function generateNewsHeadlines(){
+	return "Extra Extra! Something about tacks!";
+	// It's like a staple of the genre. I have a ticker so I may as well.
+}
+
+var ticker = l("ticker");
+
+function getNewTicker(){
+	var list=[];
+
+	// Will always play a generic one on refresh because values aren't always set.
+	list.push(choose([
+		`<q>Without thumbs, we are nothing. Without tacks, we are even less.</q><sig>  -Unknown</sig>`,
+		`<q>Give me a place to stand and a thumb tack long enough, and I will pin the world.</q><sig>  -Archimedes</sig>`,
+		`<q>I think, therefore I tack.</q><sig>  -Rene Descartes</sig>`,
+		`<q>Float like a butterfly, sting like a tack.</q><sig>  -Muhammad Ali</sig>`,
+		`<q>Judge an idea by the sharpness of the tack, not the stickiness of the tape.</q><sig>  -Korean Elvis</sig>`,
+		`<q>You miss 100% of the tacks you don't pin.</q><sig>  -Wayne Gretzky</sig>`,
+		`<q>He who would move the world should first tack his own board.</q><sig>  -Socrates</sig>`,
+		`<q>Man is condemned to be tacked.</q><sig>  -Jean-Paul Sartre</sig>`,
+		`<q>The unexamined tack is not worth pinning.</q><sig>  -Socrates</sig>`,
+		`<q>I tack, therefore I conquer.</q><sig>  -Rene Descartes</sig>`,
+		`<q>What is a tack but a will to power.</q><sig>  -Friedrich Nietzsche</sig>`,
+		`<q>A single tack can change the fate of nations</q><sig>  -Unknown</sign>`,
+		`<q>The only certainties in life are death and tacks</q><sig>  -Unknown</sign>`,
+		`<q>The supreme art of war is to pin the enemy without a fight</q><sig>  -Sun Tzu [The Art of A Tack]</sig>`,
+		`<q>Even a thumb tack, perfectly placed, casts a long shadow.</q><sig>  -Laozi</sig>`,
+		`<q>To be is to be pinned.</q><sig>  -George Berkeley</sig>`,
+		`<q>All that is tacked melts into air.</q><sig>  -Karl Marx</sig>`,
+		`<q>We are but fleeting notes, pinned briefly in the corkboard of time.</q><sig>  -Marcus Aurelius</sig>`,
+		`<q>Freedom is the space between the pins.</q><sig>  -Camus</sig>`,
+		`<q>Buffalo</q><sig>  -CMH</sig>`,
+	]));
+	
+	if(_pointersOwned > 10 & Math.random() < 0.1){ list.push(choose([
+		`<q>Reap the tacks of a pointed finger.</q><sig>  -Unknown</sig>`,
+		`<q>Two hands do less work than ten fingers</q><sig>  -Unknown</sig>`
+	]));}
+	
+	if(_workersOwned > 10 & Math.random() < 0.1){ list.push(choose([
+		`<p class="ticker">NEWS : Workers flocking to growing markets.</p>`,
+		`<p class="ticker">NEWS : Sellotape factory set ablaze.</p>`,
+	]));}
+
+	if(_totalTacksEarned > 1000000 & Math.random() < 0.1){ list.push(choose([
+		`<p class="ticket">That's a lot of tacks bro.o</p>`
+	]));}
+
+	
+
+	return choose(list);
+}
+
+function runTicker(){
+	var str = getNewTicker();
+	ticker.innerHTML = str;
+}
+
+setInterval(runTicker, 17000);
+
+// #endregion
+
+
+bootstrap();
+
+</script>
+</html>

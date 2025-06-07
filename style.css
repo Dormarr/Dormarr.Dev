@@ -1,0 +1,80 @@
+:root{
+--eerie-black: #1c1c1dff;
+--champagne-pink: #f0e0d7ff;
+--cerise: #D64E6E;
+--burnt-sienna: #e96e52ff;
+--earth-yellow: #ffbb69ff;
+--bleu: #0f7cc9;
+--mint: #00CC99;
+
+/* Not sure but I like these colours a lot. */
+--jet: #2a2b2aff;
+--dim-gray: #706c61ff;
+--cosmic-latte: #f8f4e3ff;
+--cerise2: #e5446dff;
+--coral: #ff8966ff;
+
+}
+body{
+    background-color: var(--eerie-black);
+    color: var(--champagne-pink);
+    font-family: monospace;
+    margin: 0px;
+    max-width: 100%;
+}
+div.slice{
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+}
+div.square{
+    width: 248px;
+    height: 248px;
+}
+h1{
+    font-size: 64px;
+    margin: 0px;
+}
+h2{
+    font-size: 48px;
+    margin: 0px;
+}
+a{
+    color: var(--earth-yellow);
+    font-size: 16px;
+}
+a:hover{
+    color: var(--burnt-sienna);
+}
+p{
+    font-size: 16px;
+    width: fit-content;
+}
+label{
+    max-width: 100%;
+    overflow-wrap:anywhere;
+}
+.message-container {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    height: 136px;
+    display: flex;
+    flex-direction: column; /* stack from top to bottom */
+    justify-content: flex-end; /* push items to bottom */
+    align-items: flex-end; /* align messages to the right */
+    overflow: hidden;
+}
+
+.message-container p.terminal {
+    color: var(--earth-yellow);
+    background: var(--bleu);
+    padding: 4px 8px;
+    margin: 0px;
+    opacity: 0.8;
+}
+
+.message-container p.terminal:last-child {
+    color: var(--champagne-pink);
+    opacity: 1;
+}
