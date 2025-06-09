@@ -1,5 +1,5 @@
 :root{
---eerie-black: #1c1c1dff;
+--eerie-black: rgb(17, 17, 17);
 --champagne-pink: #f0e0d7ff;
 --cerise: #D64E6E;
 --burnt-sienna: #e96e52ff;
@@ -9,6 +9,7 @@
 
 /* Not sure but I like these colours a lot. */
 --jet: #2a2b2aff;
+--off-black: rgb(53, 52, 49);
 --dim-gray: #706c61ff;
 --cosmic-latte: #f8f4e3ff;
 --cerise2: #e5446dff;
@@ -27,9 +28,23 @@ div.slice{
     display: flex;
     justify-content: center;
 }
+div.dir{
+    width: 100vw;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+}
 div.square{
     width: 248px;
     height: 248px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+div.line{
+    background-color: var(--champagne-pink);
+    height: 1px;
+    width: 100%;
 }
 h1{
     font-size: 64px;
@@ -39,9 +54,14 @@ h2{
     font-size: 48px;
     margin: 0px;
 }
+h3{
+    font-size: 32px;
+    margin: 0px;
+}
 a{
     color: var(--earth-yellow);
     font-size: 16px;
+    text-decoration: none;
 }
 a:hover{
     color: var(--burnt-sienna);
@@ -54,11 +74,15 @@ label{
     max-width: 100%;
     overflow-wrap:anywhere;
 }
+pre.ascii{
+    color: var(--off-black);
+    background-color: var(--eerie-black);
+}
 .message-container {
     position: absolute;
     right: 16px;
-    top: 16px;
-    height: 136px;
+    top: 12px;
+    height: 190px;
     display: flex;
     flex-direction: column; /* stack from top to bottom */
     justify-content: flex-end; /* push items to bottom */
@@ -67,11 +91,11 @@ label{
 }
 
 .message-container p.terminal {
-    color: var(--earth-yellow);
-    background: var(--bleu);
-    padding: 4px 8px;
+    color: var(--dim-gray);
+    background: var(--eerie-black);
+    padding: 8px 12px;
     margin: 0px;
-    opacity: 0.8;
+    opacity: 1;
 }
 
 .message-container p.terminal:last-child {
