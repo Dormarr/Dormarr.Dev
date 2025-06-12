@@ -234,7 +234,7 @@ div.line{
 					<button id="pointerBtn">Buy Extra Finger</button>
 					<div>
 						<label class="small">+0.25 per click</label> <br>
-						<label class="small">Cost: 20</label>
+						<label class="small">Cost: <label class="small" id="pointerCostLbl">20</label></label>
 						<br>
 						<label class="small">Owned:<label class="small" id="pointersOwnedLbl">0</label></label>
 					</div>
@@ -247,7 +247,7 @@ div.line{
 					<button id="workerBtn">Buy Worker</button>
 					<div>
 						<label class="small">+0.4 per second</label><br>
-						<label class="small">Cost: 100</label>
+						<label class="small">Cost: <label class="small" id="workerCostLbl">100</label></label>
 						<br>
 						<label class="small">Owned:<label class="small" id="workersOwnedLbl">0</label></label>
 					</div>
@@ -260,7 +260,7 @@ div.line{
 					<button id="printerBtn">Buy 3D Printer</button>
 					<div>
 						<label class="small">+1 per second</label><br>
-						<label class="small">Cost: 400</label>
+						<label class="small">Cost: <label class="small" id="printerCostLbl">400</label></label>
 						<br>
 						<label class="small">Owned:<label class="small" id="printersOwnedLbl">0</label></label>
 					</div>
@@ -273,7 +273,7 @@ div.line{
 					<button id="workerBtn">Buy Dropshipper (not yet)</button>
 					<div>
 						<label class="small">+100 per minute (randomly)</label><br>
-						<label class="small">Cost: 1000</label>
+						<label class="small">Cost: <label class="small" id="dropperCostLbl">1000</label></label>
 						<br>
 						<label class="small">Owned:<label class="small" id="droppersOwnedLbl">0</label></label>
 					</div>
@@ -287,7 +287,7 @@ div.line{
 					<button id="templateBtn">Buy Template</button>
 					<div>
 						<label class="small">+X per Y</label><br>
-						<label class="small">Cost: Z</label>
+						<label class="small">Cost: <label class="small" id="templateCostLbl">Z</label></label>
 						<br>
 						<label class="small">Owned:<label class="small" id="templatesOwnedLbl">0</label></label>
 					</div>
@@ -534,6 +534,10 @@ const updateLabel = {
 	upTime: (val) => { l("upTimeLbl").textContent = val; },
 	playTime: (val) => { l("playedTimeLbl").textContent = val; },
 	copyright: (val) => { l("copyright").textContent = val; },
+	pointerCost: (val) => { l("pointerCostLbl").textContent = val; },
+	workerCost: (val) => { l("workerCostLbl").textContent = val; },
+	printerCost: (val) => { l("printerCostLbl").textContent = val; },
+	dropperCost: (val) => { l("dropperCostLbl").textContent = val; },
 };
 
 // #endregion
@@ -548,6 +552,7 @@ function newGame() {
 	subtractPointer(pointers.length);
 	subtractPrinter(printers.length);
 	onRefresh();
+	resetAchievements();
 	printNotification("New Game Started", COLOURS.green);
 }
 
@@ -624,12 +629,13 @@ async function loadGame(newGame) {
 		DATA.version = getVersion();
 		DATA.theme = _lastKnownTheme || THEME.LIGHT; // Is there a way to get this to be system default?
 		onRefresh();
-		printNotification("New Game!", COLOURS.green);
+		//printNotification("New Game!", COLOURS.green);
 		return;
 	}
 
 	const raw = localStorage.getItem("tacksSave");
 	if (!raw) return;
+
 
 	try {
 		const encryptedData = JSON.parse(raw);
@@ -655,6 +661,13 @@ async function loadGame(newGame) {
 	} catch (err) {
 		console.error("Decryption failed:", err);
 	}
+
+	
+	catchUpInflation();
+	updateLabel["pointerCost"](COST.pointer);
+	updateLabel["workerCost"](COST.worker);
+	updateLabel["printerCost"](COST.printer);
+	updateLabel["dropperCost"](COST.dropshipper);
 }
 
 async function saveIntoData(){
@@ -719,7 +732,7 @@ async function repopulate(){
 	subtractGuy(workers.length);
 	subtractPointer(pointers.length);
 	subtractPrinter(printers.length);
-	// subtractPrinter(printers.length);
+
 	populateGuys();
 	populatePointers();
 	populatePrinter();
@@ -753,30 +766,6 @@ function addToLabel(name, amount) {
 
 function subtractTacks(amount){ _tacks -= amount; }
 
-function canAfford(price){ return true ? price <= parseInt(_tacks, 10) : false; }
-
-function getPrice(type){ return COST[type]; }
-
-function buy(type, amount = 1, cheat = false){
-	let price = cheat? 0 : getPrice(type);
-	if(canAfford(price)){
-		subtractTacks(price);
-		create(type, amount);
-		printNotification("Bought: " + amount + "x " + type, COLOURS.text, 2000);
-		return true;
-	}
-	else{
-		printNotification("Can't afford another " + type, COLOURS.red, 2000);
-		return false;
-	}
-}
-
-function inflatePrices(type){
-	// work out the curve you want to implement and use gates to inflate the prices.
-	// Unless compounding suffices?
-	// It just has to scale faster than you can grow, so you start relying on the following mechanics.
-}
-
 function create(type, amount){
 	switch(type){
 		case "worker":
@@ -805,11 +794,6 @@ function calculateTPC(){
 // #endregion
 
 // #region Utility
-
-// Thank you Orteil!!
-function l(what) { return document.getElementById(what);}
-function choose(arr) { return arr[Math.floor(Math.random()*arr.length)];}
-function randomFloor(x) {if ((x%1)<Math.random()) return Math.floor(x); else return Math.ceil(x);}
 
 function generateSeed(){
 	var chars = 'abcdefghijklmnopqrstuvwxyz'.split('');
@@ -912,6 +896,10 @@ function refreshDisplay(){
 	updateLabel["workersOwned"](_workersOwned);
 	updateLabel["pointersOwned"](_pointersOwned);
 	updateLabel["printersOwned"](_printersOwned);
+	updateLabel["pointerCost"](COST.pointer);
+	updateLabel["workerCost"](COST.worker);
+	updateLabel["printerCost"](COST.printer);
+	updateLabel["dropperCost"](COST.dropshipper);
 }//buffalo
 
 // Called per second
@@ -920,6 +908,7 @@ function secondDisplay(){
 	updateLabel["title"](`${Math.floor(_tacks)} Tacks!`);
 	_upTimeElapsed++;
 	_playedTimeElapsed++;
+	checkAchievements();
 	saveIntoData();
 }
 
@@ -1548,16 +1537,86 @@ setInterval(runTicker, 17000);
 setInterval(renderFrame, FPS);
 // #endregion
 
-// #region Tackonomics
+// #region Achievements
 
-function inflatePrice(asset){
 
+// Add this to the save data. Maybe minimise storage with a binstring, you know what I mean.
+let achievementsUnlocked = {
+	'firstTack': false,
+	'unskilledLabour': false,
+	'daysWork': false,
+	'eatTheRich': false,
+	'million': false,
 }
 
-function catchUpInflation(rounds, asset){
-	for(i = 0; i < rounds; i++){
-		inflatePrice(asset);
-	}	
+
+function checkAchievements(){
+	const milestones = [
+		{ id: 'firstTack', condition: _tacks >= 1, label: 'The First Tack' },
+		{ id: 'unskilledLabour', condition: _workersOwned >= 1, label: 'Buy a mans time'},
+		{ id: 'daysWork', condition: _playedTimeElapsed > 86400, label: 'All in a days work'},
+		{ id: 'eatTheRich', condition: _tacks >= 1000000000, label: 'Eat the rich'},
+		{ id: 'million', condition: _tacks >= 1000000, label: 'A cool mil'},
+	]
+	
+	milestones.forEach(m => {
+		if(m.condition && !achievementsUnlocked[m.id]){
+			achievementsUnlocked[m.id] = true;
+			printNotification('Achievement: ' + m.label, COLOURS.green, 7000);
+			console.log("Achievment Unlocked: " + m.label);
+		}
+	})
+}
+
+function resetAchievements(){
+	for(const a in achievementsUnlocked){
+		a = false;
+	}
+}
+
+// #endregion
+
+// #region Tackonomics
+
+function canAfford(price){ return true ? price <= parseInt(_tacks, 10) : false; }
+
+function getPrice(type){ return COST[type]; }
+
+function buy(type, amount = 1, cheat = false){
+	let price = cheat? 0 : getPrice(type);
+	if(canAfford(price)){
+		subtractTacks(price);
+		inflatePrice(type);
+		create(type, amount);
+		printNotification("Bought: " + amount + "x " + type, COLOURS.text, 2000);
+		return true;
+	}
+	else{
+		printNotification("Can't afford another " + type, COLOURS.red, 2000);
+		return false;
+	}
+}
+
+function inflatePrice(asset){
+	if(COST.hasOwnProperty(asset)){
+		COST[asset] *= 1.2;
+		COST[asset] = Math.floor(COST[asset]);
+		updateLabel[asset + "Cost"](COST[asset]);
+		
+	}else{
+		console.warn(`Property ${asset} doesn't exist.`);
+	}
+}
+
+function catchUpInflation(){
+	
+	for(const asset in COST){
+		const rounds = DATA[asset + "sOwned"];
+		for(i = 0; i < rounds; i++){
+			inflatePrice(asset);
+		}	
+		//console.log(`Inflated ${asset} ${rounds} times.`);
+	}
 }
 
 // #endregion
