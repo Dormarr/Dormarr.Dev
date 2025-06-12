@@ -22,11 +22,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@bnb-chain/reed-solomon/dist/index.aio.js"></script>
 <script>
 
-const canvas = l("checkerboard");
+const canvas = l("quayCanvas");
 const ctx = canvas.getContext("2d");
 
-let gridSize = 14;
-let squareSize = 450 / gridSize;
+let gridSize = 0;
+let squareSize = 0;
 
 let rawText;
 
@@ -36,22 +36,48 @@ const debug2 = l("debug2");
 
 const rs = new RS.ReedSolomon();
 
-canvas.width = gridSize * squareSize;
-canvas.height = gridSize * squareSize;
+function recalculateCanvas(){
+    squareSize = 450 / gridSize;
+    canvas.width = gridSize * squareSize;
+    canvas.height = gridSize * squareSize;
+
+}
 
 async function generateCode(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    parity = preprocessInputText();
-    drawSection(COLOURS.C, SIZE.Frame)
+    parity = await preprocessInputText();
     var encoded = await processToFinalText(rawText, parity);
+    drawCode(encoded);
     debug2.textContent = encoded + " -- Parity: " + parity;
-    // drawCheckerboard();
+}
+
+function drawCode(data){
+    drawSection(COLOURS.K, SIZE.Frame);
+    drawSection(COLOURS.W, SIZE.Whites);
+    drawData(data, SIZE.Data);
+    //drawCheckerboard();
+}
+
+function generateHeader(){
+    // I need to make sure the definition for this is solid and future proof.
+    // Needs to include text (or parity) amount, 
+}
+
+function drawData(data, coords){
+    for(i = 0; i < coords.length; i++){
+        mark(coords[i][0], coords[i][1], pairToColour[data[i]]);
+    }
+}
+
+function drawSection(colour, coords){
+    for(i = 0; i < coords.length; i++){
+        mark(coords[i][0], coords[i][1], colour);
+    }
 }
 
 function drawCheckerboard() {
 	for (let y = 0; y < gridSize; y++) {
 		for (let x = 0; x < gridSize; x++) {
-			// Alternate colors
 			let colour = (x + y) % 2 === 0 ? "#ffbb69ff" : "#D64E6E";
 			mark(x, y, colour);
 		}
@@ -60,7 +86,7 @@ function drawCheckerboard() {
 
 function mark(x, y, colour){
     ctx.fillStyle = colour;
-    ctx.fillRect(x * squareSize, y * squareSize, squareSize, squareSize);
+    ctx.fillRect(x * squareSize, y * squareSize, squareSize + 1, squareSize + 1);
 }
 
 const SIZE = {
@@ -78,7 +104,14 @@ const COLOURS = {
     W: "#F8F4E3"
 }
 
-function preprocessInputText(){
+const pairToColour = {
+    "00": COLOURS.C,
+    "01": COLOURS.M,
+    "10": COLOURS.Y,
+    "11": COLOURS.K,
+}
+
+async function preprocessInputText(){
     // Determine input field size as an amount of chars.
     // 2 d-bits per symbol, 
 
@@ -89,15 +122,18 @@ function preprocessInputText(){
 
     var parity = 0;
 
-    if(ar.length < 10){
+    if(input <= 5){
         gridSize = 7;
-        getCoords(input);
-        parity = 10 - input;
+        parity = 5 - input;
     }
     else{
-        parity =  1;
+        gridSize = 0;
+        parity =  0;
     }
-    debug1.textContent = ar;
+
+    getCoords(gridSize);
+    recalculateCanvas();
+    debug1.textContent = `${ar}, Parity: ${parity}`;
     return parity;
 }
 
@@ -110,6 +146,10 @@ function getCoords(size){
             SIZE.Header = [[1,1],[2,1],[3,1],[4,1],[5,1]];
             SIZE.Data = [[1,2],[2,2],[3,2],[4,2],[5,2],[1,3],[2,3],[3,3],[4,3],[5,3],[1,4],[2,4],[3,4],[4,4],[5,4],[1,5],[2,5],[3,5],[4,5],[5,5]];
             break;
+        case 0:
+            console.log("Unsupported amount.");
+            drawCheckerboard();
+            break;
     }
 }
 
@@ -119,7 +159,16 @@ async function processToFinalText(input, parity){
     const eccEncoded = await encodeECC(dataBytes, parity);
     const binaryPairs = uint8ArrayToBinaryPairs(eccEncoded);
 
-    debug1.textContent = `Data Bytes: ${dataBytes}, Encoded: ${eccEncoded}, BinaryPairs: ${binaryPairs}`;
+    
+
+    // const decoder = new TextDecoder();
+    // const decoded = decoder.decode(eccEncoded);
+
+    // const charArray = rawText.split('');
+    // const bin = charArrayToBinaryPairs(charArray);
+    // debug1.textContent = `Char Binary: ${bin}`;
+
+    //debug1.textContent = `Data Bytes: ${dataBytes},\n Encoded: ${eccEncoded}`;//,\n BinaryPairs: ${binaryPairs}`;
 
     return binaryPairs;
 }
@@ -134,79 +183,30 @@ async function encodeECC(data, parityBytes) {
 }
 
 function uint8ArrayToBinaryPairs(uint8array) {
-    const bitString = [...uint8array]
-        .map(byte => byte.toString(2).padStart(8, '0'))
-        .join('');
-
+    var binString = "";
+    for(var i = 0; i < uint8array.length; i++){
+        binString += uint8array[i].charCodeAt(0).toString(2).padStart(8, '0') + "";
+    }
     const pairs = [];
-    for (let i = 0; i < bitString.length; i += 2) {
-        pairs.push(bitString.slice(i, i + 2));
+    for (let i = 0; i < binString.length; i += 2) {
+        pairs.push(binString.slice(i, i + 2));
     }
     return pairs;
 }
 
-
-// function textToBin(text) {
-//     return [...text].map(c =>
-//         c.charCodeAt().toString(2).padStart(8, '0')
-//     ).join('');
-// }
-
-// function toPairs(input) {
-//     const pairs = [];
-//     for (let i = 0; i < input.length; i += 2) {
-//         pairs.push(input.substring(i, i + 2));
-//     }
-//     return pairs;
-// }
-
-// function binaryToUint8Array(binaryArray) {
-//     const bitString = Array.isArray(binaryArray) ? binaryArray.join('') : binaryArray;
-//     const padded = bitString.padEnd(Math.ceil(bitString.length / 8) * 8, '0');
-//     const bytes = [];
-//     for (let i = 0; i < padded.length; i += 8) {
-//         bytes.push(parseInt(padded.slice(i, i + 8), 2));
-//     }
-//     return new Uint8Array(bytes);
-// }
-
-// async function encodeECC(data, parity) {
-//     return await rs.encode(data, parity);
-// }
-
-// function bytesToBinaryPairs(uint8array) {
-//     const bitString = [...uint8array]
-//         .map(b => b.toString(2).padStart(8, '0'))
-//         .join('');
-//     const pairs = [];
-//     for (let i = 0; i < bitString.length; i += 2) {
-//         pairs.push(bitString.slice(i, i + 2));
-//     }
-//     return pairs;
-// }
-
-
-const pairToColour = {
-    "00": COLOURS.C,
-    "01": COLOURS.M,
-    "10": COLOURS.Y,
-    "11": COLOURS.K
-}
-
-function renderColourGrid(binaryPairs){
-    for(i = 0; i < binaryPairs.length; i++){
-        //
+function charArrayToBinaryPairs(charArray) {
+    var binString = "";
+    for(var i = 0; i < charArray.length; i++){
+        binString += charArray[i].charCodeAt(0).toString(2).padStart(8, '0') + "";
     }
-}
-
-function drawSection(colour, coords){
-    for(i = 0; i < coords.length; i++){
-        mark(coords[i][0], coords[i][1]);
+    const pairs = [];
+    for (let i = 0; i < binString.length; i += 2) {
+        pairs.push(binString.slice(i, i + 2));
     }
+    return pairs;
 }
 
-
-function downloadCanvas(canvas, filename = "canvas.png") {
+function downloadCanvas(canvas, filename = "quay.png") {
 	const link = document.createElement("a");
 	link.download = filename;
 	link.href = canvas.toDataURL("image/png");
