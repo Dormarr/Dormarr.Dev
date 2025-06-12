@@ -270,7 +270,7 @@ div.line{
 			<div id="dropperSlice" class="slice">
 				<canvas id="dropperCanvas"></canvas>
 				<div class="widget buy">
-					<button id="workerBtn">Buy Dropshipper</button>
+					<button id="workerBtn">Buy Dropshipper (not yet)</button>
 					<div>
 						<label class="small">+100 per minute (randomly)</label><br>
 						<label class="small">Cost: 1000</label>
@@ -302,7 +302,7 @@ div.line{
 		<button id="toggleDark">Toggle Theme</button><br>
 		<button id="saveGame">Save</button>
 		<button id="newGame">New</button>
-		<button id="cheat">Cheat</button>
+		<button id="cheat" style="visibility: hidden;">Cheat</button>
 	</div>
 	<div style="text-align: right; position: fixed; right: 16px; bottom: 16px;">
 		<label class="small"; id="dateTimeLbl">DateTime</label>
@@ -512,6 +512,7 @@ let COST = {
 	pointer: 20,
 	worker: 100,
 	printer: 400,
+	dropshipper: 1000,
 }
 
 const FPS = 1000 / 32;
@@ -700,6 +701,7 @@ l("cheat").addEventListener("click", function(){
 	addTack(1000000);
 	buy("worker", 20, true);
 	buy("pointer", 20, true);
+	buy("printer", 20, true);
 });
 
 // #endregion
@@ -1546,6 +1548,19 @@ setInterval(runTicker, 17000);
 setInterval(renderFrame, FPS);
 // #endregion
 
+// #region Tackonomics
+
+function inflatePrice(asset){
+
+}
+
+function catchUpInflation(rounds, asset){
+	for(i = 0; i < rounds; i++){
+		inflatePrice(asset);
+	}	
+}
+
+// #endregion
 
 bootstrap();
 

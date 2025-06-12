@@ -3,6 +3,7 @@
     <meta charset="UTF-8">
     <link href="style.css"  rel="stylesheet">
     <title id="tabTitle">Dormarr.Dev</title>
+    <link rel="manifest" href="/site.webmanifest">
 </head>
 <body style="overflow: hidden">
     <div id="msg-box" class="message-container"></div>
