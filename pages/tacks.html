@@ -132,16 +132,25 @@ div.widget{
 	color: var(--white);
 	padding: 10px;
 	font-family: monospace;
-	transition-duration: 0.2s;
-	z-index: 10;
+	font-weight: bold;
+	display: flex;
+	flex-direction: column;
+	transition-duration: 0.5s;
+	z-index: 20;
 	width: fit-content;
-	pointer-events: none;
+	cursor: pointer;
 }
 .notification.show{
 	opacity: 0.9;
 }
 .notification.hide{
 	opacity: 0;
+}
+.hidden{
+	display: none;
+}
+.notification:hover .hidden{
+	display: block;
 }
 .slice{
 	width: 100%;
@@ -159,8 +168,6 @@ div.line{
 	height: 1px;
 	background-color: var(--ascii);
 }
-
-
 .marquee {
 	margin: 0 auto;
 	white-space: nowrap;
@@ -169,17 +176,14 @@ div.line{
 	width: 100%;
 	padding-top: 1px;
 }
-
 .marquee span {
 	display: inline-block;
 	padding-left: 100%;
 	animation: marquee 17s linear infinite;
 }
-
 .marquee2 span {
 	animation-delay: 17s;
 }
-
 @keyframes marquee {
 	0% {
 		transform: translate(0, 0);
@@ -302,7 +306,8 @@ div.line{
 		<button id="toggleDark">Toggle Theme</button><br>
 		<button id="saveGame">Save</button>
 		<button id="newGame">New</button>
-		<button id="cheat" style="visibility: hidden;">Cheat</button>
+		<button id="cheat" style="display: none;">Cheat</button>
+		<button id="dummyBtn">Dummy</button>
 	</div>
 	<div style="text-align: right; position: fixed; right: 16px; bottom: 16px;">
 		<label class="small"; id="dateTimeLbl">DateTime</label>
@@ -311,10 +316,10 @@ div.line{
 		<br>
 		<label class="small"; id="playedTimeLbl">PlayedTime</label>
 		<br>
+		<label class="small"; id="seedLbl">Seed</label>
 		<p>Add more debug stuff.</p>
 	</div>
-	<div id="notificationContainer" style="pointer-events: none; position: fixed; display: flex; bottom: 32px; text-align: center; align-items: center; width: 100%; flex-direction: column-reverse;">
-	</div>
+	<div id="notificationContainer" style="z-index: 20; position: fixed; display: flex; bottom: 148px; right: 16px; text-align: center; align-items:end; width: auto; flex-direction: column-reverse;"></div>
 <footer style="pointer-events: none; padding-bottom: 16px;">
 	<label class="small" id="copyright"></label>	
 	<br>
@@ -323,17 +328,16 @@ div.line{
 
 
 </body>
-<script src="../js/utils.js"></script>
-<script src="../js/perlin.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/perlin.js"></script>
 <script>
 
 /*=========================================================================
 
 == TO-DO ==
-✓ Cleaned up some code
-✓ Implemented 3D printer w. manual frame animation
+✓ Adjust notifications to be less intrusive.
+- Ensure backwards support.
 - Start dividing up the files maybe. This is getting ridiculous
-- Implement cost inflation
 - Fix printer positioning - adjust exclusion zone code to allow for padding.
 - Sort out string storage 	i.e: preferences.theme?'1':'0'; etc.
 - Tool tips and dynamic HTML
@@ -353,8 +357,8 @@ An ASCII board room could be really cool. Like a separate screen entirely.
 Finger 		Increase per click
 Scavenger	Increase per second
 Dropshipper	Increase per minute (randomly)
-3D Printer	Increase per second
 Warehouse Upgrade	Intro to commercial industry
+3D Printer	Increase per second
 Workers		Increase per second (during day only: pending labour law change)
 R&D Upgrade		Branches off to researching new methods of production - A research/tech tree?
 Board Room Upgrade	Opens up a whole coruption line of stuff
@@ -385,7 +389,7 @@ Date: Formatted as 'YY.MM'.
 
 const MAJOR = "0";
 const MINOR = "2";
-const BUILD = "4a";
+const BUILD = "5a";
 const REVISION = ""; //add decimal if using.
 
 function getDateArray(){
@@ -413,7 +417,7 @@ function getVersionDate(){
 }
 
 function setCopyright(){
-	const ra = "© Ryan Appleyard ";
+	const ra = "© Dormarr ";
 	let y = new Date().getFullYear();
 	updateLabel["copyright"](ra + romanize(y));
 }
@@ -453,12 +457,15 @@ let _tacksPerClick = 1;
 let _pointersOwned = 0;
 let _workersOwned = 0;
 let _printersOwned = 0;
+let _droppersOwned = 0;
 
 let _totalTacksEarned = 0;
 let _totalHandmadeTacks = 0;
 let _clicks = 0;
 
 let _lastKnownTheme;
+
+let _achievements;
 
 const canvasHeight = 200;
 
@@ -473,8 +480,10 @@ const DATA = {
 	pointersOwned: 0,
 	workersOwned: 0,
 	printersOwned: 0,
+	droppersOwned: 0,
 	playedTime: 0,
-	theme: _lastKnownTheme || THEME.LIGHT
+	theme: _lastKnownTheme || THEME.LIGHT,
+	achievements: 0, // Store achievements in order using binary values as bools, then split and read for each achievement in order to rebuild list.
 }
 
 // Light and Dark refer to the themes they are paired with.
@@ -529,10 +538,12 @@ const updateLabel = {
 	pointersOwned: (val) => { l("pointersOwnedLbl").textContent = val; },
 	workersOwned: (val) => { l("workersOwnedLbl").textContent = val; },
 	printersOwned: (val) => { l("printersOwnedLbl").textContent = val; },
+	droppersOwned: (val) => { l("droppersOwnedLbl").textContent = val; },
 	title: (val) => { l("title").textContent = val; },
 	dateTime: (val) => { l("dateTimeLbl").textContent = val; },
 	upTime: (val) => { l("upTimeLbl").textContent = val; },
 	playTime: (val) => { l("playedTimeLbl").textContent = val; },
+	seed: (val) => { l("seedLbl").textContent = val; },
 	copyright: (val) => { l("copyright").textContent = val; },
 	pointerCost: (val) => { l("pointerCostLbl").textContent = val; },
 	workerCost: (val) => { l("workerCostLbl").textContent = val; },
@@ -545,6 +556,9 @@ const updateLabel = {
 // #region Save Logic
 
 function newGame() {
+
+	// Should probably have an "Are you sure" bit before actually reseting.
+
 	localStorage.removeItem("tacksSave");
 	loadGame(true);
 	resetTime();
@@ -554,6 +568,7 @@ function newGame() {
 	onRefresh();
 	resetAchievements();
 	printNotification("New Game Started", COLOURS.green);
+	autosaveGame(false);
 }
 
 function resetTime(){
@@ -593,6 +608,7 @@ async function getKey() {
 
 async function saveGame(autosave) {
 
+	achievements = await getAchievementString();
 	await saveIntoData();
 
 	const key = await getKey();
@@ -610,8 +626,10 @@ async function saveGame(autosave) {
 	if (!autosave) printNotification("Saved Game", getColor(COLOURS.green));
 }
 
-function autosaveGame() {
+function autosaveGame(notify = true) {
 	saveGame(true);
+	console.log("Autosaved without notification.");
+	if(!notify) return;
 	printNotification("Autosaved", COLOURS.green, 2000);
 }
 
@@ -625,11 +643,14 @@ async function loadGame(newGame) {
 		_pointersOwned = 0;
 		_workersOwned = 0;
 		_printersOwned = 0;
+		_droppersOwned = 0;
 		_playedTimeElapsed = 0;
 		DATA.version = getVersion();
+		resetAchievements();
+		_achievements = 0;
+		
 		DATA.theme = _lastKnownTheme || THEME.LIGHT; // Is there a way to get this to be system default?
 		onRefresh();
-		//printNotification("New Game!", COLOURS.green);
 		return;
 	}
 
@@ -652,16 +673,19 @@ async function loadGame(newGame) {
 		_pointersOwned = parsed.pointersOwned || 0;
 		_workersOwned = parsed.workersOwned || 0;
 		_printersOwned = parsed.printersOwned || 0;
+		_droppersOwned = parsed._droppersOwneed || 0;
 		_playedTimeElapsed = parsed.playedTime || 0;
 		DATA.version = parsed.version || getVersion();
 		_lastKnownTheme = parsed.theme || THEME.LIGHT;
+		_achievements = parsed.achievements || 0;
 		saveIntoData();
 		onRefresh();
 		printNotification("Game Loaded", COLOURS.green);
 	} catch (err) {
 		console.error("Decryption failed:", err);
 	}
-
+	
+	loadAchievements();
 	
 	catchUpInflation();
 	updateLabel["pointerCost"](COST.pointer);
@@ -673,10 +697,12 @@ async function loadGame(newGame) {
 async function saveIntoData(){
 	DATA.tacks = _tacks;
 	DATA.pointersOwned = _pointersOwned;
-	DATA.printersOwned = _printersOwned;
 	DATA.workersOwned = _workersOwned;
+	DATA.printersOwned = _printersOwned;
+	DATA.droppersOwned = _droppersOwned;
 	DATA.playedTime = _playedTimeElapsed;
 	DATA.theme = _lastKnownTheme;
+	DATA.achievements = getAchievementString();
 
 	return;
 }
@@ -716,6 +742,11 @@ l("cheat").addEventListener("click", function(){
 	buy("pointer", 20, true);
 	buy("printer", 20, true);
 });
+l("dummyBtn").addEventListener("click", function(){ dummyClick() });
+
+function dummyClick(){
+	getAchievementString();
+}
 
 // #endregion
 
@@ -796,9 +827,10 @@ function calculateTPC(){
 // #region Utility
 
 function generateSeed(){
-	var chars = 'abcdefghijklmnopqrstuvwxyz'.split('');
+	// Maybe the seed should be numerical for more efficient storage?
+	var chars = 'abcdefghijklmnopqrstuvwxyz1234567890'.split('');
 	var str = '';
-	for(var i=0; i<5; i++){ str += choose(chars); }
+	for(var i=0; i<10; i++){ str += choose(chars); }
 	return str;
 }
 
@@ -906,10 +938,11 @@ function refreshDisplay(){
 function secondDisplay(){
 	createTack(_tacksPerSecond);
 	updateLabel["title"](`${Math.floor(_tacks)} Tacks!`);
+	updateLabel["seed"](`Seed: ${DATA.seed}`);
 	_upTimeElapsed++;
 	_playedTimeElapsed++;
 	checkAchievements();
-	saveIntoData();
+	// saveIntoData();
 }
 
 function toggleTheme(){
@@ -934,27 +967,29 @@ function getCurrentTheme(){
 	return isLightMode() ? THEME.LIGHT: THEME.DARK;
 }
 
-// Expand on this to make it work for achievements.
-function printNotification(message, color, duration = 3000){
+function printNotification(message, color, duration = 3000, description = ""){
 	const note = document.createElement("div");
 	note.className = "notification";
 	note.textContent = message;
 	note.style.color = getColor(color);
 	note.style.backgroundColor = getColor(COLOURS.base);
 	note.style.border = "solid 1px " + getColor(COLOURS.baseInv);
-	note.style.fontWeight = "bold";
-	note.style.zIndex = "20";
-
+	
+	if(description != ""){
+		const desc = document.createElement("div");
+		desc.className = "hidden";
+		desc.textContent = description;
+		desc.style.color = getColor(COLOURS.text);
+		note.appendChild(desc);
+	}
 	notificationContainer.appendChild(note);
-
+	
 	setTimeout(() =>{
 		note.classList.remove("show");
 		note.classList.add("hide");
 		setTimeout(() => note.remove(), 500);
 	}, duration);
 }
-
-// space for tooltips I guess
 
 function getColor(type) {
     if (typeof type === "string") return type;
@@ -988,6 +1023,7 @@ function resizeCanvas(canvas, collection) {
 }
 
 function renderFrame() {
+	const userScreen = l("ascii");
     if (!paused) {
         let output = "";
         const width = userScreen.clientWidth / 6;
@@ -1541,35 +1577,83 @@ setInterval(renderFrame, FPS);
 
 
 // Add this to the save data. Maybe minimise storage with a binstring, you know what I mean.
-let achievementsUnlocked = {
+const achievementsUnlocked = {
 	'firstTack': false,
 	'unskilledLabour': false,
 	'daysWork': false,
 	'eatTheRich': false,
 	'million': false,
+	'thousandClicks' : false,
+	'handOfGod': false,
+	'capitalistUtopia': false,
 }
 
+async function getAchievementString(){
+	let str = '';
+	for(const [key, value] of Object.entries(achievementsUnlocked)){
+		i = value ? 1 : 0;
+		str += i;
+	}
+	console.log(`Achievements full: ${Object.entries(achievementsUnlocked)}`);
+	console.log(`Achievement String: ${str}.`);
+	return str;
+}
+
+function loadAchievements(){
+	//split the binary string and apply values to each of the achievements.
+	let ar = getAchievementString(_achievements).toString().split('');
+	let temp = '';
+	let entries = Object.entries(achievementsUnlocked);
+	for(let i = 0; i < entries.length; i++){
+		let [key, value] = entries[i];
+		let v = returnBoolFromBinString(ar[i]);
+		entries[i] = [key, v];
+	}
+	// _achievements = entries;
+	console.log(`Loaded Achievements: ${entries}`);
+}
+
+function returnBoolFromBinString(i){
+	if(i === 1){
+		return true;
+	}else{
+		return false;
+	}
+}
+
+function GetMaxCost(){
+	let c = 0;
+	for(const _c in COST){
+		_c > c ? c = _c : c = c;
+
+	}
+	return c;
+}
 
 function checkAchievements(){
 	const milestones = [
-		{ id: 'firstTack', condition: _tacks >= 1, label: 'The First Tack' },
-		{ id: 'unskilledLabour', condition: _workersOwned >= 1, label: 'Buy a mans time'},
-		{ id: 'daysWork', condition: _playedTimeElapsed > 86400, label: 'All in a days work'},
-		{ id: 'eatTheRich', condition: _tacks >= 1000000000, label: 'Eat the rich'},
-		{ id: 'million', condition: _tacks >= 1000000, label: 'A cool mil'},
+		{ id: 'firstTack', condition: _tacks >= 1, label: 'The First Tack', description: 'Recieve your first tack.'},
+		{ id: 'unskilledLabour', condition: _workersOwned >= 1, label: 'Buy a mans time', description: 'Buy a worker.'},
+		{ id: 'daysWork', condition: _playedTimeElapsed > 86400, label: 'All in a days work', description: 'Play for 24 hours.'},
+		{ id: 'eatTheRich', condition: _tacks >= 1000000000, label: 'Eat the rich', description: 'Reach 1 billion tacks.'},
+		{ id: 'million', condition: _tacks >= 1000000, label: 'A cool mil', description: 'Reach 1 million tacks.'},
+		{ id: 'thousandClicks', condition: _clicks >= 1000, label: 'Obsessive Clicker', description: 'Click 1000 times.'},
+		{ id: 'handOfGod', condition: _tacksPerClick >= 1000, label: 'Hand of God', description: '1000 tacks per click.'},
+		{ id: 'capitalistUtopia', condition: GetMaxCost() >= Infinity, label: 'Capitalist Utopia', description: 'Reach infinite cost on product.'},
 	]
 	
 	milestones.forEach(m => {
 		if(m.condition && !achievementsUnlocked[m.id]){
 			achievementsUnlocked[m.id] = true;
-			printNotification('Achievement: ' + m.label, COLOURS.green, 7000);
+			// Maybe I should make a dedicated achievement notification system?
+			printNotification('Achievement: ' + m.label, COLOURS.green, 7000, m.description);
 			console.log("Achievment Unlocked: " + m.label);
 		}
 	})
 }
 
 function resetAchievements(){
-	for(const a in achievementsUnlocked){
+	for(let a in achievementsUnlocked){
 		a = false;
 	}
 }
