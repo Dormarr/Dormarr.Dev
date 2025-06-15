@@ -1,0 +1,162 @@
+// #region Save Logic
+
+function newGame() {
+
+	// Should probably have an "Are you sure" bit before actually reseting.
+
+	localStorage.removeItem("tacksSave");
+	loadGame(true);
+	resetTime();
+	subtractGuy(workers.length);
+	subtractPointer(pointers.length);
+	subtractPrinter(printers.length);
+	onRefresh();
+	resetAchievements();
+	printNotification("New Game Started", COLOURS.green);
+	autosaveGame(false);
+}
+
+function resetTime(){
+	_upTimeElapsed = 0;
+	_playedTimeElapsed = 0;
+}
+
+const FIXED_KEY = "tackstack-key123"; // Shared secret
+const FIXED_SALT = new TextEncoder().encode("tackstack-salt");
+
+// Derive a persistent key using PBKDF2
+async function getKey() {
+	if (!window.encryptionKey) {
+		const keyMaterial = await crypto.subtle.importKey(
+			"raw",
+			new TextEncoder().encode(FIXED_KEY),
+			{ name: "PBKDF2" },
+			false,
+			["deriveKey"]
+		);
+
+		window.encryptionKey = await crypto.subtle.deriveKey(
+			{
+				name: "PBKDF2",
+				salt: FIXED_SALT,
+				iterations: 100000,
+				hash: "SHA-256"
+			},
+			keyMaterial,
+			{ name: "AES-GCM", length: 256 },
+			false,
+			["encrypt", "decrypt"]
+		);
+	}
+	return window.encryptionKey;
+}
+
+async function saveGame(autosave) {
+
+	await saveIntoData();
+
+	const key = await getKey();
+	const iv = crypto.getRandomValues(new Uint8Array(12));
+	const encoded = new TextEncoder().encode(JSON.stringify(DATA));
+	const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
+
+	const encryptedData = {
+		iv: Array.from(iv),
+		cipherText: Array.from(new Uint8Array(encrypted))
+	};
+
+	localStorage.setItem("tacksSave", JSON.stringify(encryptedData));
+
+	if (!autosave) printNotification("Saved Game", getColor(COLOURS.green));
+}
+
+function autosaveGame(notify = true) {
+	saveGame(true);
+	if(!notify) {
+		console.log("Autosaved without notification.");
+		return;
+	}
+	printNotification("Autosaved", COLOURS.green, 2000);
+}
+
+async function loadGame(newGame) {
+
+	if(newGame){
+		_tacksPerSecond = 0;
+		_tacksPerClick = 1;
+		_totalTacksEarned = 0;
+		_seed = generateSeed();
+		_tacks =  0;
+		_pointersOwned = 0;
+		_workersOwned = 0;
+		_printersOwned = 0;
+		_droppersOwned = 0;
+		_playedTimeElapsed = 0;
+		_clicks = 0;
+		DATA.version = getVersion();
+		_achievements = await getAchievementArray();
+		
+		DATA.theme = _lastKnownTheme || THEME.LIGHT; // Is there a way to get this to be system default?
+		onRefresh();
+		return;
+	}
+
+	const raw = localStorage.getItem("tacksSave");
+	if (!raw) return;
+
+
+	try {
+		const encryptedData = JSON.parse(raw);
+		const key = await getKey();
+		const iv = new Uint8Array(encryptedData.iv);
+		const cipherText = new Uint8Array(encryptedData.cipherText);
+
+		const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipherText);
+		const json = new TextDecoder().decode(decrypted);
+		const parsed = JSON.parse(json);
+
+		_seed = parsed.seed || generateSeed();
+		_tacks = parsed.tacks || 0;
+		_clicks = parsed.clicks || 0;
+		_pointersOwned = parsed.pointersOwned || 0;
+		_workersOwned = parsed.workersOwned || 0;
+		_printersOwned = parsed.printersOwned || 0;
+		_droppersOwned = parsed._droppersOwned || 0;
+		_playedTimeElapsed = parsed.playedTime || 0;
+		DATA.version = parsed.version || getVersion();
+		_lastKnownTheme = parsed.theme || THEME.LIGHT;
+		_totalTacksEarned = parsed.totalTacksEarned || 0;
+		_achievements = parsed.achievements || getAchievementArray();
+		_achievementsEarned = parsed.achievementsEarned || 0;
+		await saveIntoData();
+		onRefresh();
+		printNotification("Game Loaded", COLOURS.green);
+	} catch (err) {
+		console.error("Decryption failed:", err);
+	}
+	
+	await loadAchievements();
+	
+	catchUpInflation();
+	updateLabel["pointerCost"](COST.pointer);
+	updateLabel["workerCost"](COST.worker);
+	updateLabel["printerCost"](COST.printer);
+	updateLabel["dropperCost"](COST.dropshipper);
+}
+
+async function saveIntoData(){
+	DATA.seed = _seed;
+	DATA.tacks = _tacks;
+	DATA.clicks = _clicks;
+	DATA.pointersOwned = _pointersOwned;
+	DATA.workersOwned = _workersOwned;
+	DATA.printersOwned = _printersOwned;
+	DATA.droppersOwned = _droppersOwned;
+	DATA.playedTime = _playedTimeElapsed;
+	DATA.theme = _lastKnownTheme;
+	DATA.totalTacksEarned = _totalTacksEarned;
+	DATA.achievements = _achievements;
+	DATA.achievementsEarned = _achievementsEarned;
+
+	return;
+}

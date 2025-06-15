@@ -4,201 +4,20 @@
 	<meta charset="utf-8"/>
 	<title id="title">Tacks</title>
 	<meta name="viewport" content="width=device-width"/>
-<style>
-:root{
-	--white: #171717;
-	--black: #f5f1ec;
-	--whiteAccent: #DDD;
-	--ascii: #E1D8C1;
-	--feature: coral;
-}
-.light{
-	--black: #171717;
-	--white: #f5f1ec;
-	--whiteAccent: #DDD;
-	--ascii: #5c5b59;
-	--feature: coral;
-}
-.dark{
-	--white: #171717;
-	--black: #f5f1ec;
-	--whiteAccent: #DDD;
-	--ascii: #E1D8C1;
-	--feature: coral;
-}
-body{
-	width: 100vw;
-	text-align: center;
-	background-color: var(--white);
-	color: var(--black);
-	font-family:monospace;
-	margin: 0px;
-	min-height: 100vh;
-	overflow-x: hidden;
-	overflow-y: scroll;
-}
-.dark-mode{
-	background-color: var(--black);
-	color: var(--white);
-}
-p.tps{
-	font-style: italic;
-	font-size: 14px;
-	margin: 0px;
-}
-p.ticker{
-	font-size: 14px;
-	margin-top: 1px;
-	padding: 0px;
-}
-a{
-	color: var(--black);
-	font-size: 16px;
-}
-a:hover{
-	color: var(--feature);
-}
-h1 {
-	text-align: center;
-	color: var(--black);
-}
-h1.title{
-	text-align: center;
-	color:  vaR(--black);
-	font-size: 48px;
-	margin: 0px;
-}
-h2 {
-	font-size: 24px;
-	margin: 8px;
-	color: var(--black);
-}
-button{
-	font-size: 16px;
-	padding: 8px;
-	margin: 4px;
-	color: var(--white);
-	background-color: var(--black);
-	transition-duration: 0.2s;
-	font-family: monospace;
-	font-weight: bold;
-}
-button:hover{
-	background-color: var(--feature);
-
-}
-label{
-	font-size: 32px;
-	color: var(--black);
-	padding: 12px;
-	font-family: monospace;
-}
-label.small{
-	font-size: 16px;
-	padding: 2px;
-}
-footer {
-	position: relative;
-	height: 100px;
-	width: 100%;
-	text-align: center;
-	display: flex;
-	flex-direction: column-reverse;
-	z-index: 10;
-}
-div.widget{
-	background-color: var(--white);
-	border: solid 1px var(--black);
-	min-width: 250px;
-	width: fit-content;
-	padding: 12px;
-	margin: 12px;
-	border-radius: 4px;
-	text-align: center;
-	position: relative;
-	
-	&.buy{
-		top: -180px;
-	}
-}
-#ascii{
-	width: 100vw;
-	overflow-x: hidden;
-	position: relative;
-	margin: 0px;
-	color: var(--ascii);
-}
-.notification{
-	color: var(--white);
-	padding: 10px;
-	font-family: monospace;
-	font-weight: bold;
-	display: flex;
-	flex-direction: column;
-	transition-duration: 0.5s;
-	z-index: 20;
-	width: fit-content;
-	cursor: pointer;
-}
-.notification.show{
-	opacity: 0.9;
-}
-.notification.hide{
-	opacity: 0;
-}
-.hidden{
-	display: none;
-}
-.notification:hover .hidden{
-	display: block;
-}
-.slice{
-	width: 100%;
-	height: 201px;
-	display: flex;
-	align-items: center;
-	flex-direction: column;
-}
-canvas{
-	height: 200px;
-	width: 100vw;
-}
-div.line{
-	width: 100%;
-	height: 1px;
-	background-color: var(--ascii);
-}
-.marquee {
-	margin: 0 auto;
-	white-space: nowrap;
-	overflow: hidden;
-	position: relative;
-	width: 100%;
-	padding-top: 1px;
-}
-.marquee span {
-	display: inline-block;
-	padding-left: 100%;
-	animation: marquee 17s linear infinite;
-}
-.marquee2 span {
-	animation-delay: 17s;
-}
-@keyframes marquee {
-	0% {
-		transform: translate(0, 0);
-	}
-	100% {
-		transform: translate(-100%, 0);
-	}
-}
-
-</style>
+	<link href="../tacks.css" rel="stylesheet">
 </head>
 <! ========================================================================= >
 <body>
-	<div style="width: 100vw; height: 16px; padding: 8px; display: flex; flex-direction: row;">
-		<a href="../index.php">Home</a>
+	<div style="width: 100%; display: flex; justify-content: center;">
+		<div style="width: 90%; height: fit-content; display: flex; padding-top: 8px; padding-bottom: 8px; flex-direction: row; justify-content: space-between;">
+			<div style="width: fit-content;">
+				<a href="../index.php">Home</a>
+			</div>
+			<div style="width: fit-content;">
+				<label class="small button" id="statsBtn">Stats</label>
+				<label class="small button" id="changelogBtn">Changelog</label>
+			</div>
+		</div>
 	</div>
 	<div class="line"></div>
 	<div style="height: 290px">
@@ -227,7 +46,7 @@ div.line{
 	</div>
 	<div class="line"></div>
 	
-	<h2> Upgrades & Automation</h2>
+	<h2>Buy Stuff</h2>
 	
 	<div style="display: flex; flex-direction: column; width: 100%">
 		<div style="width: 100vw; display: flex; max-width: 100vw; flex-direction: column">
@@ -311,31 +130,53 @@ div.line{
 	</div>
 	<div style="text-align: right; position: fixed; right: 16px; bottom: 16px;">
 		<label class="small"; id="dateTimeLbl">DateTime</label>
-		<br>
-		<label class="small"; id="upTimeLbl">UpTime</label>
-		<br>
-		<label class="small"; id="playedTimeLbl">PlayedTime</label>
-		<br>
-		<label class="small"; id="seedLbl">Seed</label>
-		<p>Add more debug stuff.</p>
 	</div>
 	<div id="notificationContainer" style="z-index: 20; position: fixed; display: flex; bottom: 148px; right: 16px; text-align: center; align-items:end; width: auto; flex-direction: column-reverse;"></div>
-<footer style="pointer-events: none; padding-bottom: 16px;">
-	<label class="small" id="copyright"></label>	
-	<br>
-	<label class="small" id="versionLbl"></label>
-</footer>
-
-
+	
+	<div class="slice overlay hide" id="statsWindow">
+		<div class="widget overlay" style="min-width: 400px;">
+			<h2>Statistics</h2>
+			<div style="display: flex; flex-direction: column;">
+				<label class="small" id="tacksEarnedLbl">x</label>
+				<label class="small" id="totalClicksLbl">x</label>
+				<label class="small" id="achievementsEarnedLbl">x</label>
+				<label class="small"; id="seedLbl">Seed</label>
+				<label class="small"; id="upTimeLbl">UpTime</label>
+				<label class="small"; id="playedTimeLbl">PlayedTime</label>
+				<button id="closeStats">Close</button>
+			</div>
+		</div>
+	</div>
+	<div class="slice overlay show" id="updateWindow">
+		<div class="widget overlay" style="min-width: 400px; border: 2px solid var(--feature)">
+			<h2>UPDATE</h2>
+			<div style="display: flex; flex-direction: column;">
+				<label class="small">More achievements.</label>
+				<label class="small">Monitor progress from stats tab.</label>
+				<br>
+				<button id="closeUpdate">Close</button>
+			</div>
+		</div>
+	</div>
+	<footer style="pointer-events: none; padding-bottom: 16px;">
+		<label class="small" id="copyright"></label>	
+		<br>
+		<label class="small" id="versionLbl"></label>
+	</footer>	
 </body>
-<script src="js/utils.js"></script>
-<script src="js/perlin.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/perlin.js"></script>
+<script src="../js/tackonomics.js"></script>
+<script src="../js/drawing.js"></script>
+<script src="../js/achievements.js"></script>
+<script src="../js/save.js"></script>
 <script>
 
 /*=========================================================================
 
 == TO-DO ==
 ✓ Adjust notifications to be less intrusive.
+- Add a changelog overlay window (scrollable) with all the update info going forward. Add to InnerHTML from external doc.
 - Ensure backwards support.
 - Start dividing up the files maybe. This is getting ridiculous
 - Fix printer positioning - adjust exclusion zone code to allow for padding.
@@ -389,7 +230,7 @@ Date: Formatted as 'YY.MM'.
 
 const MAJOR = "0";
 const MINOR = "2";
-const BUILD = "5a";
+const BUILD = "6a";
 const REVISION = ""; //add decimal if using.
 
 function getDateArray(){
@@ -450,24 +291,24 @@ const THEME = {
 }
 
 // Internal Data
-let _tacks = 0;
-let _tacksPerSecond = 0;
-let _tacksPerClick = 1;
+let _tacks;
+let _tacksPerSecond;
+let _tacksPerClick;
 
-let _pointersOwned = 0;
-let _workersOwned = 0;
-let _printersOwned = 0;
-let _droppersOwned = 0;
+let _pointersOwned;
+let _workersOwned;
+let _printersOwned;
+let _droppersOwned;
 
-let _totalTacksEarned = 0;
-let _totalHandmadeTacks = 0;
-let _clicks = 0;
+let _totalTacksEarned;
+let _totalHandmadeTacks;
+let _clicks;
 
 let _lastKnownTheme;
 
 let _achievements;
+let _achievementsEarned;
 
-const canvasHeight = 200;
 
 const DATA = {
 	version: VERSION,
@@ -483,7 +324,9 @@ const DATA = {
 	droppersOwned: 0,
 	playedTime: 0,
 	theme: _lastKnownTheme || THEME.LIGHT,
-	achievements: 0, // Store achievements in order using binary values as bools, then split and read for each achievement in order to rebuild list.
+	achievements: 0,
+	achievementsEarned: 0,
+
 }
 
 // Light and Dark refer to the themes they are paired with.
@@ -549,163 +392,13 @@ const updateLabel = {
 	workerCost: (val) => { l("workerCostLbl").textContent = val; },
 	printerCost: (val) => { l("printerCostLbl").textContent = val; },
 	dropperCost: (val) => { l("dropperCostLbl").textContent = val; },
+
+	tacksEarned: (val) => { l("tacksEarnedLbl").textContent = val; },
+	totalClicks: (val) => { l("totalClicksLbl").textContent = val; },
+	achievementsEarned: (val) => { l("achievementsEarnedLbl").textContent = val; },
 };
 
 // #endregion
-
-// #region Save Logic
-
-function newGame() {
-
-	// Should probably have an "Are you sure" bit before actually reseting.
-
-	localStorage.removeItem("tacksSave");
-	loadGame(true);
-	resetTime();
-	subtractGuy(workers.length);
-	subtractPointer(pointers.length);
-	subtractPrinter(printers.length);
-	onRefresh();
-	resetAchievements();
-	printNotification("New Game Started", COLOURS.green);
-	autosaveGame(false);
-}
-
-function resetTime(){
-	_upTimeElapsed = 0;
-	_playedTimeElapsed = 0;
-}
-
-const FIXED_KEY = "tackstack-key123"; // Shared secret
-const FIXED_SALT = new TextEncoder().encode("tackstack-salt");
-
-// Derive a persistent key using PBKDF2
-async function getKey() {
-	if (!window.encryptionKey) {
-		const keyMaterial = await crypto.subtle.importKey(
-			"raw",
-			new TextEncoder().encode(FIXED_KEY),
-			{ name: "PBKDF2" },
-			false,
-			["deriveKey"]
-		);
-
-		window.encryptionKey = await crypto.subtle.deriveKey(
-			{
-				name: "PBKDF2",
-				salt: FIXED_SALT,
-				iterations: 100000,
-				hash: "SHA-256"
-			},
-			keyMaterial,
-			{ name: "AES-GCM", length: 256 },
-			false,
-			["encrypt", "decrypt"]
-		);
-	}
-	return window.encryptionKey;
-}
-
-async function saveGame(autosave) {
-
-	achievements = await getAchievementString();
-	await saveIntoData();
-
-	const key = await getKey();
-	const iv = crypto.getRandomValues(new Uint8Array(12));
-	const encoded = new TextEncoder().encode(JSON.stringify(DATA));
-	const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
-
-	const encryptedData = {
-		iv: Array.from(iv),
-		cipherText: Array.from(new Uint8Array(encrypted))
-	};
-
-	localStorage.setItem("tacksSave", JSON.stringify(encryptedData));
-
-	if (!autosave) printNotification("Saved Game", getColor(COLOURS.green));
-}
-
-function autosaveGame(notify = true) {
-	saveGame(true);
-	console.log("Autosaved without notification.");
-	if(!notify) return;
-	printNotification("Autosaved", COLOURS.green, 2000);
-}
-
-async function loadGame(newGame) {
-
-	if(newGame){
-		_tacksPerSecond = 0;
-		_tacksPerClick = 1;
-		DATA.seed = generateSeed();
-		_tacks =  0;
-		_pointersOwned = 0;
-		_workersOwned = 0;
-		_printersOwned = 0;
-		_droppersOwned = 0;
-		_playedTimeElapsed = 0;
-		DATA.version = getVersion();
-		resetAchievements();
-		_achievements = 0;
-		
-		DATA.theme = _lastKnownTheme || THEME.LIGHT; // Is there a way to get this to be system default?
-		onRefresh();
-		return;
-	}
-
-	const raw = localStorage.getItem("tacksSave");
-	if (!raw) return;
-
-
-	try {
-		const encryptedData = JSON.parse(raw);
-		const key = await getKey();
-		const iv = new Uint8Array(encryptedData.iv);
-		const cipherText = new Uint8Array(encryptedData.cipherText);
-
-		const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipherText);
-		const json = new TextDecoder().decode(decrypted);
-		const parsed = JSON.parse(json);
-
-		DATA.seed = parsed.seed || generateSeed();
-		_tacks = parsed.tacks || 0;
-		_pointersOwned = parsed.pointersOwned || 0;
-		_workersOwned = parsed.workersOwned || 0;
-		_printersOwned = parsed.printersOwned || 0;
-		_droppersOwned = parsed._droppersOwneed || 0;
-		_playedTimeElapsed = parsed.playedTime || 0;
-		DATA.version = parsed.version || getVersion();
-		_lastKnownTheme = parsed.theme || THEME.LIGHT;
-		_achievements = parsed.achievements || 0;
-		saveIntoData();
-		onRefresh();
-		printNotification("Game Loaded", COLOURS.green);
-	} catch (err) {
-		console.error("Decryption failed:", err);
-	}
-	
-	loadAchievements();
-	
-	catchUpInflation();
-	updateLabel["pointerCost"](COST.pointer);
-	updateLabel["workerCost"](COST.worker);
-	updateLabel["printerCost"](COST.printer);
-	updateLabel["dropperCost"](COST.dropshipper);
-}
-
-async function saveIntoData(){
-	DATA.tacks = _tacks;
-	DATA.pointersOwned = _pointersOwned;
-	DATA.workersOwned = _workersOwned;
-	DATA.printersOwned = _printersOwned;
-	DATA.droppersOwned = _droppersOwned;
-	DATA.playedTime = _playedTimeElapsed;
-	DATA.theme = _lastKnownTheme;
-	DATA.achievements = getAchievementString();
-
-	return;
-}
 
 function bootstrap(){
 	setCopyright();
@@ -720,7 +413,6 @@ function bootstrap(){
 	setInterval(autosaveGame, 600000);
 	setInterval(animationHandler, 1000);
 
-
 	updateLabel["version"](VERSION);
 }
 
@@ -729,7 +421,7 @@ function bootstrap(){
 
 // #region Buttons
 
-l("btn").addEventListener("click", context =>{ addTack(_tacksPerClick);});
+l("btn").addEventListener("click", context =>{ addTack(_tacksPerClick); _clicks++;});
 l("pointerBtn").addEventListener("click", context =>{ buy("pointer"); });
 l("workerBtn").addEventListener("click", context =>{ buy("worker"); });
 l("printerBtn").addEventListener("click", context => { buy("printer"); });
@@ -743,9 +435,28 @@ l("cheat").addEventListener("click", function(){
 	buy("printer", 20, true);
 });
 l("dummyBtn").addEventListener("click", function(){ dummyClick() });
+l("statsBtn").addEventListener("click", function(){ openStats(); })
+l("closeStats").addEventListener("click", function(){ closeStats(); })
+l("closeUpdate").addEventListener("click", function(){ closeUpdate(); })
 
 function dummyClick(){
-	getAchievementString();
+	// Use for whatever
+}
+
+function openStats(){
+	l("statsWindow").classList.remove("hide");
+	l("statsWindow").classList.add("show");
+}
+
+
+function closeStats(){
+	l("statsWindow").classList.remove("show");
+	l("statsWindow").classList.add("hide");
+}
+
+function closeUpdate(){
+	l("updateWindow").classList.remove("show");
+	l("updateWindow").classList.add("hide");
 }
 
 // #endregion
@@ -915,11 +626,14 @@ function sinWave(radian, radius){ return Math.sin(radian) * radius; }
 
 // #region Display
 
+const totalAchievementsCount = Object.entries(achievementsUnlocked).length;
+
 // Called at FPS (1000 / 30);
 function refreshDisplay(){
 	calculateTPS();
 	calculateTPC();
 	_tacks += _tacksPerSecond / FPS;
+	_totalTacksEarned += _tacksPerSecond / FPS
 	updateLabel["tacks"](numberWithCommas(Math.floor(_tacks)));
 	updateLabel["tps"](_tacksPerSecond.toFixed(2) + " tps");
 	updateLabel["dateTime"](new Date().toLocaleString());
@@ -932,6 +646,9 @@ function refreshDisplay(){
 	updateLabel["workerCost"](COST.worker);
 	updateLabel["printerCost"](COST.printer);
 	updateLabel["dropperCost"](COST.dropshipper);
+	updateLabel["tacksEarned"](`Total tacks earned: ${numberWithCommas(Math.floor(_totalTacksEarned))}`);
+	updateLabel["totalClicks"](`Total clicks: ${_clicks}`);
+	updateLabel["achievementsEarned"](`Achievements unlocked: ${_achievementsEarned} / ${totalAchievementsCount}`);
 }//buffalo
 
 // Called per second
@@ -1044,400 +761,6 @@ function renderFrame() {
   }
 }
 
-
-// #endregion
-
-// #region Ascii Shared
-
-const WIGGLE_AMPLITUDE = 2; // max wiggle in pixels
-const WIGGLE_SPEED = 0.01;  // speed of wiggle
-const REPULSION_RADIUS = 450; // smaller radius so repulsion looks nicer
-const REPULSION_FORCE = 2; // how strongly guys get pushed away
-
-const MAX_SPRITE_COUNT = 256;
-
-const P_BASE_FONT_SIZE = 8;
-const W_BASE_FONT_SIZE = 12;
-const W_MAX_FONT_SIZE = 16;
-const P_MAX_FONT_SIZE = 13;
-const SCALE_RADIUS = 100;
-const ROT_RADIUS = 100; // UNUSED
-
-function getExclusion(canvas, height = 150, width = 300){
-	return {
-    x: canvas.width / 2 - 175,
-    y: canvas.height / 2 - 90,
-    width: width,
-    height: height,
-	};
-}
-
-function createSprite(sprite, canvas, collection, amount, animated = false, pb = 0, pt = 0, pl = 0, pr = 0){
-	populateSprite(amount, sprite, canvas, collection, animated, pb, pt, pl, pr);
-}
-
-function populateSprite(count, sprite, canvas, collection, animated, pb = 0, pt = 0, pl = 0, pr = 0){
-	const exclusion = getExclusion(canvas);
-	count = Math.min(count, MAX_SPRITE_COUNT);	
-
-	// I need to find a way to move this to a sort of universal draw function.
-	let spr;
-	
-	for (let i = 0; i < count; i++) {
-		spr = animated ? sprite[0] : sprite[Math.floor(Math.random() * sprite.length)];
-		const {x: X, y:Y} = getValidPosition(canvas, exclusion, pb, pt, pl, pr)
-		collection.push({
-			homeX: X,
-			homeY: Y,
-			id: i,
-			sprite: spr
-		});
-	}
-}
-
-// #endregion
-
-// #region Art
-
-//reformat to be a central source for ASCII art.
-
-const CHAR_TACK = [
-[ " Π ",
-  " T " ]];
-
-const CHAR_GUY = [
-[
-	"  o  ",
-	" /#\\ ",
-	" / \\ "
-],
-[
-	"  o  ",
-	" <#v ",
-	" / \\ "
-],
-[
-	"  o  ",
-	" <T> ",
-	" / \\ "
-],
-[
-	"  o  ",
-	" /#> ",
-	" / \\ "
-],
-[
-	"  o  ",
-	" /X\\ ",
-	" / \\ "
-],
-[
-	"  o  ",
-	" (Y) ",
-	" / \\ "
-],
-];
-
-const CHAR_POINTER = [[
-	 "   |  ",
-	 "r^^|  ",
-	"\\__|) "
-],
-[
-	 "  |   ",
-	 "r^'^  ",
-	"\\__|) "
-]];
-
-const CHAR_PRINTER = [
-	// First Layer
- ["  ┌─┐ ",
-  "  │▒│ ",
-  "╔═╧═╧╗",
-  "║    ║",
-  "╠═╤■═╣",
-  "▀▀▀▀▀▀"],
- ["  ┌─┐ ",
-  "  │▒│ ",
-  "╔═╧═╧╗",
-  "║    ║",
-  "╠══╤■╣",
-  "▀▀▀▀▀▀"],
- ["  ┌─┐ ",
-  "  │▒│ ",
-  "╔═╧═╧╗",
-  "║    ║",
-  "╠═╤■═╣",
-  "▀▀▀▀▀▀"],
- ["  ┌─┐ ",
-  "  │▒│ ",
-  "╔═╧═╧╗",
-  "║    ║",
-  "╠╤■══╣",
-  "▀▀▀▀▀▀"],
-
- ["  ┌─┐ ",
-  "  │▒│ ",
-  "╔═╧═╧╗",
-  "╠╤■══╣",
-  "║ █▄ ║",
-  "▀▀▀▀▀▀"],
- ["  ┌─┐ ",
-  "  │▒│ ",
-  "╔═╧═╧╗",
-  "╠═╤■═╣",
-  "║ █▄ ║",
-  "▀▀▀▀▀▀"],
- ["  ┌─┐ ",
-  "  │▒│ ",
-  "╔═╧═╧╗",
-  "╠══╤■╣",
-  "║ █▄ ║",
-  "▀▀▀▀▀▀"],
- ["  ┌─┐ ",
-  "  │▒│ ",
-  "╔═╧═╧╗",
-  "╠═╤■═╣",
-  "║ █▄ ║",
-  "▀▀▀▀▀▀"],
-];
-
-// #endregion
-
-// #region Pointers Render
-
-function populatePointers(){
-	populateSprite(_pointersOwned, CHAR_POINTER, pointerCanvas, pointers);
-}
-
-function createPointer(amount){
-	_pointersOwned += amount;
-	createSprite(CHAR_POINTER, pointerCanvas, pointers, amount);
-}
-
-const pointerCanvas = l("pointerCanvas");
-const pointerCtx = pointerCanvas.getContext("2d");
-pointerCanvas.width = window.innerWidth;
-pointerCanvas.height = canvasHeight;
-
-let pointerCount = 0;
-const pointerMouse = { x: 0, y: 0 }
-const pointers = [];
-
-pointerCanvas.addEventListener("mousemove", e => {
-    const rect = pointerCanvas.getBoundingClientRect(); // get canvas position & size
-    pointerMouse.x = e.clientX - rect.left; // mouse x relative to canvas
-    pointerMouse.y = e.clientY - rect.top;  // mouse y relative to canvas
-});
-
-function subtractPointer(amount = 1){
-	for(i = 0; i < amount; i++){
-		pointers.pop();
-	}
-}
-
-function drawPointer(pointerSprite, x, y, scale) {
-    const pointerFontSize = P_BASE_FONT_SIZE * scale;
-    const lineHeight = pointerFontSize;
-
-    pointerCtx.font = pointerFontSize + "px monospace";
-    pointerCtx.textBaseline = "top";
-    pointerCtx.fillStyle = getColor(COLOURS.ascii);
-
-    for (let i = 0; i < pointerSprite.length; i++) {
-        pointerCtx.fillText(pointerSprite[i], x, y + i * lineHeight);
-    }
-}
-
-
-
-function updatePointer() {
-    pointerCtx.clearRect(0, 0, pointerCanvas.width, pointerCanvas.height);
-    time += WIGGLE_SPEED;
-
-    pointers.forEach(p => {
-	const v = wiggle(p, pointerMouse, 1.2);
-        drawPointer(p.sprite, v[0], v[1], v[2]);
-    });
-    
-    requestAnimationFrame(updatePointer);
-}
-
-// #endregion
-
-// #region Guys Render
-
-function populateGuys(){
-	populateSprite(_workersOwned, CHAR_GUY, workerCanvas, workers);
-}
-
-function createWorker(amount){
-	_workersOwned += amount;
-	createSprite(CHAR_GUY, workerCanvas, workers, amount);
-}
-
-const workerCanvas = l("workerCanvas");
-const workerCtx = workerCanvas.getContext("2d");
-workerCanvas.width = window.innerWidth;
-workerCanvas.height = canvasHeight;
-
-const workerMouse = { x: 0, y: 0 };
-const workers = [];
-
-workerCanvas.addEventListener("mousemove", e => {
-	const rect = workerCanvas.getBoundingClientRect();
-	workerMouse.x = e.clientX - rect.left; // mouse x relative to canvas
-	workerMouse.y = e.clientY - rect.top;  // mouse y relative to canvas
-});
-
-function subtractGuy(amount = 1){
-	for(i = 0; i < amount; i++){
-		workers.pop();
-	}
-}
-
-function drawGuy(guySprite, x, y, scale) {
-	const fontSize = W_BASE_FONT_SIZE * scale;
-	const lineHeight = fontSize;
-
-	workerCtx.font = fontSize + "px monospace";
-	workerCtx.textBaseline = "top";
-	workerCtx.fillStyle = getColor(COLOURS.ascii);
-	for (let i = 0; i < guySprite.length; i++) {
-		workerCtx.fillText(guySprite[i], x, y + i * lineHeight);
-	}
-}
-
-let time = 0;
-
-function updateWorker() {
-	workerCtx.clearRect(0, 0, workerCanvas.width, workerCanvas.height);
-	time += WIGGLE_SPEED;
-
-	workers.forEach(g => {
-		const v = wiggle(g, workerMouse, 0);
-		drawGuy(g.sprite, v[0], v[1], v[2]);
-	});
-
-	requestAnimationFrame(updateWorker);
-}
-
-// #endregion
-
-// #region Printer Render
-
-function populatePrinter(){
-	populateSprite(_printersOwned, CHAR_PRINTER, printerCanvas, printers);
-}
-
-function createPrinter(amount = 1){
-	_printersOwned += amount;
-	createSprite(CHAR_PRINTER, printerCanvas, printers, amount, true);
-}
-
-const printerCanvas = l("printerCanvas");
-const printerCtx = printerCanvas.getContext("2d");
-printerCanvas.width = window.innerWidth;
-printerCanvas.height = canvasHeight;
-
-const PRNTR_BASE_FONT_SIZE = 12;
-const printerMouse = { x: 0, y: 0 };
-let printers = [];
-
-printerCanvas.addEventListener("mousemove", e => {
-	const rect = printerCanvas.getBoundingClientRect();
-	printerMouse.x = e.clientX - rect.left; // mouse x relative to canvas
-	printerMouse.y = e.clientY - rect.top;  // mouse y relative to canvas
-});
-
-function drawPrinter(printerSprite, x, y, scale, animated = false){
-	const printerFontSize = PRNTR_BASE_FONT_SIZE * scale;
-	const lineHeight = printerFontSize;// * 0.75;
-
-	printerCtx.font = `${printerFontSize}px monospace`;
-	printerCtx.textBaseline = "top";
-	printerCtx.fillStyle = getColor(COLOURS.ascii);	
-	
-	for(let i = 0; i < printerSprite.length; i++){
-		
-		f = Math.floor((frame + 1) % 8 );
-
-
-		spr = animated ? CHAR_PRINTER[f][i] : printerSprite[i];
-		printerCtx.fillText(spr, x , y + i * lineHeight);
-	}
-}
-
-function updatePrinter(){
-	// clearCanvas(printerCanvas);
-	printerCtx.clearRect(0, 0, printerCanvas.width, printerCanvas.height);
-
-	var pos = getValidPosition(printerCanvas, getExclusion(printerCanvas));
-
-	printers.forEach(p => {
-		const v = wiggle(p, printerMouse, 0.3, 0.2)
-		drawPrinter(p.sprite, v[0], v[1], v[2], true);
-	})
-
-	requestAnimationFrame(updatePrinter);
-}
-
-function subtractPrinter(amount = 1){
-	for(let i = 0; i < amount; i++){
-		printers.pop();
-	}
-}
-
-// #endregion
-
-// #region Tack Render
-
-function createTack(amount = 1) {
-	if(tacks.length >= MAX_SPRITE_COUNT) return;
-	createSprite(CHAR_TACK, tackCanvas, tacks, amount)
-}
-
-function populateTack(){
-	populateSprite(tackCount, CHAR_TACK, tackCanvas, tacks);
-}
-
-const tackCanvas = l("tackCanvas");
-const tackCtx = tackCanvas.getContext("2d");
-tackCanvas.width = window.innerWidth;
-tackCanvas.height = canvasHeight;
-
-const T_BASE_FONT_SIZE = 18;
-const yVelocity = 2;
-let tackCount = 0;
-const tackMouse = { x: 0, y: 0 };
-let tacks = [];
-
-function drawTack(tackSprite, x, y, scale) {
-	const tackFontSize = T_BASE_FONT_SIZE * scale;
-	const lineHeight = tackFontSize / 2;
-
-	tackCtx.font = `${tackFontSize}px monospace`;
-	tackCtx.textBaseline = "top";
-	tackCtx.fillStyle = getColor(COLOURS.ascii);
-
-	for (let i = 0; i < tackSprite.length; i++) {
-		tackCtx.fillText(tackSprite[i], x, y + i * lineHeight);
-	}
-}
-
-function updateTack() {
-	tackCtx.clearRect(0, 0, tackCanvas.width, tackCanvas.height);
-
-	tacks = tacks.filter(p => p.homeY < tackCanvas.height + 200);
-
-	tacks.forEach(p => {
-		p.homeY += Math.random() * yVelocity + 1;
-		const v = wiggle(p, tackMouse, 0);
-		drawTack(p.sprite, v[0], p.homeY - canvasHeight, v[2]);
-	});
-	
-	requestAnimationFrame(updateTack);
-}
 
 // #endregion
 
@@ -1571,138 +894,6 @@ function runTicker(){
 
 setInterval(runTicker, 17000);
 setInterval(renderFrame, FPS);
-// #endregion
-
-// #region Achievements
-
-
-// Add this to the save data. Maybe minimise storage with a binstring, you know what I mean.
-const achievementsUnlocked = {
-	'firstTack': false,
-	'unskilledLabour': false,
-	'daysWork': false,
-	'eatTheRich': false,
-	'million': false,
-	'thousandClicks' : false,
-	'handOfGod': false,
-	'capitalistUtopia': false,
-}
-
-async function getAchievementString(){
-	let str = '';
-	for(const [key, value] of Object.entries(achievementsUnlocked)){
-		i = value ? 1 : 0;
-		str += i;
-	}
-	console.log(`Achievements full: ${Object.entries(achievementsUnlocked)}`);
-	console.log(`Achievement String: ${str}.`);
-	return str;
-}
-
-function loadAchievements(){
-	//split the binary string and apply values to each of the achievements.
-	let ar = getAchievementString(_achievements).toString().split('');
-	let temp = '';
-	let entries = Object.entries(achievementsUnlocked);
-	for(let i = 0; i < entries.length; i++){
-		let [key, value] = entries[i];
-		let v = returnBoolFromBinString(ar[i]);
-		entries[i] = [key, v];
-	}
-	// _achievements = entries;
-	console.log(`Loaded Achievements: ${entries}`);
-}
-
-function returnBoolFromBinString(i){
-	if(i === 1){
-		return true;
-	}else{
-		return false;
-	}
-}
-
-function GetMaxCost(){
-	let c = 0;
-	for(const _c in COST){
-		_c > c ? c = _c : c = c;
-
-	}
-	return c;
-}
-
-function checkAchievements(){
-	const milestones = [
-		{ id: 'firstTack', condition: _tacks >= 1, label: 'The First Tack', description: 'Recieve your first tack.'},
-		{ id: 'unskilledLabour', condition: _workersOwned >= 1, label: 'Buy a mans time', description: 'Buy a worker.'},
-		{ id: 'daysWork', condition: _playedTimeElapsed > 86400, label: 'All in a days work', description: 'Play for 24 hours.'},
-		{ id: 'eatTheRich', condition: _tacks >= 1000000000, label: 'Eat the rich', description: 'Reach 1 billion tacks.'},
-		{ id: 'million', condition: _tacks >= 1000000, label: 'A cool mil', description: 'Reach 1 million tacks.'},
-		{ id: 'thousandClicks', condition: _clicks >= 1000, label: 'Obsessive Clicker', description: 'Click 1000 times.'},
-		{ id: 'handOfGod', condition: _tacksPerClick >= 1000, label: 'Hand of God', description: '1000 tacks per click.'},
-		{ id: 'capitalistUtopia', condition: GetMaxCost() >= Infinity, label: 'Capitalist Utopia', description: 'Reach infinite cost on product.'},
-	]
-	
-	milestones.forEach(m => {
-		if(m.condition && !achievementsUnlocked[m.id]){
-			achievementsUnlocked[m.id] = true;
-			// Maybe I should make a dedicated achievement notification system?
-			printNotification('Achievement: ' + m.label, COLOURS.green, 7000, m.description);
-			console.log("Achievment Unlocked: " + m.label);
-		}
-	})
-}
-
-function resetAchievements(){
-	for(let a in achievementsUnlocked){
-		a = false;
-	}
-}
-
-// #endregion
-
-// #region Tackonomics
-
-function canAfford(price){ return true ? price <= parseInt(_tacks, 10) : false; }
-
-function getPrice(type){ return COST[type]; }
-
-function buy(type, amount = 1, cheat = false){
-	let price = cheat? 0 : getPrice(type);
-	if(canAfford(price)){
-		subtractTacks(price);
-		inflatePrice(type);
-		create(type, amount);
-		printNotification("Bought: " + amount + "x " + type, COLOURS.text, 2000);
-		return true;
-	}
-	else{
-		printNotification("Can't afford another " + type, COLOURS.red, 2000);
-		return false;
-	}
-}
-
-function inflatePrice(asset){
-	if(COST.hasOwnProperty(asset)){
-		COST[asset] *= 1.2;
-		COST[asset] = Math.floor(COST[asset]);
-		updateLabel[asset + "Cost"](COST[asset]);
-		
-	}else{
-		console.warn(`Property ${asset} doesn't exist.`);
-	}
-}
-
-function catchUpInflation(){
-	
-	for(const asset in COST){
-		const rounds = DATA[asset + "sOwned"];
-		for(i = 0; i < rounds; i++){
-			inflatePrice(asset);
-		}	
-		//console.log(`Inflated ${asset} ${rounds} times.`);
-	}
-}
-
 // #endregion
 
 bootstrap();
