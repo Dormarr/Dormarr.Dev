@@ -64,9 +64,21 @@ h1.title{
 	margin: 0px;
 }
 h2 {
-	font-size: 24px;
+	font-size: 32px;
 	margin: 8px;
 	color: var(--black);
+}
+h3{
+	font-size: 24px;
+	text-align: left;
+}
+li {
+	font-size: 16px;
+	text-align: start;
+
+}
+ul {
+	text-align: start;
 }
 button{
 	font-size: 16px;
@@ -119,6 +131,12 @@ div.widget{
 	&.overlay{
 		position: fixed;
 		top: 33%;
+	}
+	&.changelog{
+		position: fixed;
+		top: 32px;
+		max-height: 80%;
+		overflow-y: auto;
 	}
 }
 #ascii{

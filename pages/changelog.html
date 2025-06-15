@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Changelog Editor</title>
+	<style>
+		body {
+			font-family: sans-serif;
+			padding: 20px;
+			max-width: 800px;
+			margin: auto;
+            background-color: #171717;
+            color: #FEFEFE;
+		}
+		label {
+			display: block;
+			margin-top: 15px;
+			font-weight: bold;
+		}
+		input, textarea {
+			width: 100%;
+			box-sizing: border-box;
+			margin-top: 5px;
+			padding: 8px;
+			font-family: monospace;
+		}
+		textarea {
+			height: 60px;
+		}
+		button {
+			margin-top: 20px;
+			padding: 10px 20px;
+			font-size: 16px;
+		}
+		#output {
+			height: 300px;
+		}
+	</style>
+</head>
+<body>
+
+	<h2>🛠 Changelog Editor</h2>
+    <p>This was made by ChatGPT. Don't judge me.</p>
+    <br>
+
+	<label for="fileInput">Import Existing Changelog (.json):</label>
+	<input type="file" id="fileInput" accept=".json" onchange="loadFile(event)">
+
+	<label>Version:</label>
+	<input type="text" id="version" placeholder="e.g. 0.2.7a">
+
+	<label>Date:</label>
+	<input type="text" id="date" placeholder="e.g. 16-06-2025">
+
+	<label>Additions (one per line):</label>
+	<textarea id="additions" placeholder="New feature A&#10;Improved system B"></textarea>
+
+	<label>Fixes (one per line):</label>
+	<textarea id="fixes" placeholder="Fixed bug in XYZ"></textarea>
+
+	<label>Notes (one per line):</label>
+	<textarea id="notes" placeholder="Future idea: redo GUI"></textarea>
+
+	<button onclick="addChangelogEntry()">➕ Add Entry to Top</button>
+	<button onclick="downloadChangelog()">💾 Download JSON</button>
+
+	<h3>📄 Preview Updated JSON:</h3>
+	<textarea id="output" readonly></textarea>
+
+	<script>
+		let changelog = [];
+
+		function parseLines(id) {
+			return document.getElementById(id).value
+				.split('\n')
+				.map(line => line.trim())
+				.filter(line => line !== '');
+		}
+
+		function addChangelogEntry() {
+			const version = document.getElementById('version').value.trim();
+			const date = document.getElementById('date').value.trim();
+
+			if (!version || !date) {
+				alert("Version and date are required.");
+				return;
+			}
+
+			const newEntry = {
+				version: version,
+				date: date,
+				additions: parseLines('additions'),
+				fixes: parseLines('fixes'),
+				notes: parseLines('notes')
+			};
+
+			changelog.unshift(newEntry);
+			updateOutput();
+		}
+
+		function updateOutput() {
+			document.getElementById('output').value = JSON.stringify(changelog, null, 4);
+		}
+
+		function loadFile(event) {
+			const file = event.target.files[0];
+			if (!file) return;
+
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				try {
+					changelog = JSON.parse(e.target.result);
+					updateOutput();
+					alert("✅ Changelog loaded!");
+				} catch (err) {
+					alert("❌ Invalid JSON file.");
+				}
+			};
+			reader.readAsText(file);
+		}
+
+		function downloadChangelog() {
+			const blob = new Blob([JSON.stringify(changelog, null, 4)], { type: 'application/json' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'changelog.json';
+			a.click();
+			URL.revokeObjectURL(url);
+		}
+	</script>
+
+</body>
+</html>

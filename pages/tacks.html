@@ -13,9 +13,9 @@
 			<div style="width: fit-content;">
 				<a href="../index.php">Home</a>
 			</div>
-			<div style="width: fit-content;">
+			<div style="display: flex; flex-direction: row; gap: 64px;">
 				<label class="small button" id="statsBtn">Stats</label>
-				<label class="small button" id="changelogBtn">Changelog</label>
+				<label class="small button" id="openChangelog">Changelog</label>
 			</div>
 		</div>
 	</div>
@@ -143,11 +143,12 @@
 				<label class="small"; id="seedLbl">Seed</label>
 				<label class="small"; id="upTimeLbl">UpTime</label>
 				<label class="small"; id="playedTimeLbl">PlayedTime</label>
+				<br>
 				<button id="closeStats">Close</button>
 			</div>
 		</div>
 	</div>
-	<div class="slice overlay show" id="updateWindow">
+	<div class="slice overlay" id="updateWindow">
 		<div class="widget overlay" style="min-width: 400px; border: 2px solid var(--feature)">
 			<h2>UPDATE</h2>
 			<div style="display: flex; flex-direction: column;">
@@ -157,6 +158,9 @@
 				<button id="closeUpdate">Close</button>
 			</div>
 		</div>
+	</div>
+	<div class="slice overlay" id="changelogWindow">
+		<div id="changelogContent" class="widget changelog hide"></div>
 	</div>
 	<footer style="pointer-events: none; padding-bottom: 16px;">
 		<label class="small" id="copyright"></label>	
@@ -438,9 +442,54 @@ l("dummyBtn").addEventListener("click", function(){ dummyClick() });
 l("statsBtn").addEventListener("click", function(){ openStats(); })
 l("closeStats").addEventListener("click", function(){ closeStats(); })
 l("closeUpdate").addEventListener("click", function(){ closeUpdate(); })
+l("openChangelog").addEventListener("click", function(){ openChangelog(); })
 
 function dummyClick(){
 	// Use for whatever
+}
+
+async function loadChangelog(){
+	const response = await fetch('../files/tacks_changelog.json');
+	const data = await response.json();
+	return data;
+}
+
+async function openChangelog(){
+	const changelog = await loadChangelog();
+	const container = l("changelogContent");
+	container.classList.remove("hide");
+	container.classList.add("show");
+	container.innerHTML = `<label id="closeChangelog" class="small button">Close</label>`;
+
+	changelog.forEach(entry => {
+		const section = document.createElement('div');
+		section.innerHTML += `
+			<h2>Version ${entry.version} - ${entry.date}</h2>
+			<h3>Additions</h3>
+			<ul>
+				${entry.additions.map(change => `<li>${change}</li>`).join('')}
+			</ul>
+			<h3>Fixes</h3>
+			<ul>
+				${entry.fixes.map(change => `<li>${change}</li>`).join('')}
+			</ul>
+			<h3>Notes</h3>
+			<ul>
+				${entry.notes.map(change => `<li>${change}</li>`).join('')}
+			</ul>
+			<hr>
+		`
+		container.appendChild(section);
+	})
+
+	l("closeChangelog").addEventListener("click", function(){ closeChangelog(); })
+
+	container.style.display = 'block';
+}
+
+function closeChangelog(){
+	l("changelogContent").classList.remove("show");
+	l("changelogContent").classList.add("hide");
 }
 
 function openStats(){

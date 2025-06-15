@@ -95,6 +95,7 @@ async function loadGame(newGame) {
 		_clicks = 0;
 		DATA.version = getVersion();
 		_achievements = await getAchievementArray();
+		_achievementsEarned = 0;
 		
 		DATA.theme = _lastKnownTheme || THEME.LIGHT; // Is there a way to get this to be system default?
 		onRefresh();
