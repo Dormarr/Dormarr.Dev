@@ -39,7 +39,6 @@ function checkAchievements(){
 	milestones.forEach(m => {
 		if(m.condition && !achievementsUnlocked[m.id]){
 			achievementsUnlocked[m.id] = true;
-            // _achievementsEarned++;
 			printNotification('Achievement: ' + m.label, COLOURS.green, 7000, m.description);
 			console.log("Achievement Unlocked: " + m.label);
 			discreetSave();

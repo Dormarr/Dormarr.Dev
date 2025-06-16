@@ -700,10 +700,6 @@ function refreshDisplay(){
 	updateLabel["workersOwned"](_workersOwned);
 	updateLabel["pointersOwned"](_pointersOwned);
 	updateLabel["printersOwned"](_printersOwned);
-	updateLabel["pointerCost"](COST.pointer);
-	updateLabel["workerCost"](COST.worker);
-	updateLabel["printerCost"](COST.printer);
-	updateLabel["dropperCost"](COST.dropshipper);
 	updateLabel["tacksEarned"](`Total tacks earned: ${numberWithCommas(Math.floor(_totalTacksEarned))}`);
 	updateLabel["totalClicks"](`Total clicks: ${_clicks}`);
 	updateLabel["achievementsEarned"](`Achievements unlocked: ${_achievementsEarned} / ${totalAchievementsCount}`);
