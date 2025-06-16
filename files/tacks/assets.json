@@ -1,0 +1,23 @@
+[
+    {
+        "ID": "pointer",
+        "Name": "Pointer",
+        "Cost": 25,
+        "Type": "Click",
+        "Produce": 0.25 
+    },
+    {
+        "ID": "worker",
+        "Name": "Worker",
+        "Cost": 100,
+        "Type": "Second",
+        "Produce": 0.4
+    },
+    {
+        "ID": "printer",
+        "Name": "Printer",
+        "Cost": 400,
+        "Type": "Second",
+        "Produce": 1
+    }
+]
