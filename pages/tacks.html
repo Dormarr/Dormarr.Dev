@@ -16,6 +16,7 @@
 			<div style="display: flex; flex-direction: row; gap: 64px;">
 				<label class="small button" id="statsBtn">Stats</label>
 				<label class="small button" id="openChangelog">Changelog</label>
+				<label class="small button" id="openAchievements">Achievements</label>
 			</div>
 		</div>
 	</div>
@@ -48,7 +49,7 @@
 	
 	<h2>Buy Stuff</h2>
 	
-	<div style="display: flex; flex-direction: column; width: 100%">
+	<div id="sliceContainer" style="display: flex; flex-direction: column; width: 100%">
 		<div style="width: 100vw; display: flex; max-width: 100vw; flex-direction: column">
 			<div class="line"></div>
 			<div id="pointerSlice" class="slice">
@@ -148,7 +149,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="slice overlay" id="updateWindow">
+	<div class="slice overlay show" id="updateWindow">
 		<div class="widget overlay" style="min-width: 400px; border: 2px solid var(--feature)">
 			<h2>UPDATE</h2>
 			<div style="display: flex; flex-direction: column;">
@@ -161,6 +162,9 @@
 	</div>
 	<div class="slice overlay" id="changelogWindow">
 		<div id="changelogContent" class="widget changelog hide"></div>
+	</div>
+	<div class="slice overlay" id="achievementsWindow">
+		<div id="achievementsContent" class="widget changelog hide"></div>
 	</div>
 	<footer style="pointer-events: none; padding-bottom: 16px;">
 		<label class="small" id="copyright"></label>	
@@ -180,8 +184,11 @@
 /*=========================================================================
 
 == TO-DO ==
-✓ Adjust notifications to be less intrusive.
 ✓ Redo purchase slices to be generated in code. TEST IN HOME ENVIRONMENT
+✓ Add achievements window
+✓ Tweaked achievement calculations code
+- Release Dropshipper
+- Implement upgrades
 - Tool tips and dynamic HTML - Make more persistent templates
 ✓ Add a changelog overlay window (scrollable) with all the update info going forward. Add to InnerHTML from external doc.
 - Ensure backwards support.
@@ -212,6 +219,14 @@ Board Room Upgrade	Opens up a whole coruption line of stuff
 
 Beyond this it could go anywhere.
 
+== Skill/Research Tree ==
+Have 2 main threads, corrupt and honest.
+Honest leans more towards socialism and utopian views on labour.
+Corrupt goes full capitalist hellscape. Power abuses and the like.
+
+Track corruption level and have random events happen as you progress.
+Make sure to make the honest line be eventful too though.
+
 An interactable ASCII research tree. Yes please.
 I need to nail tooltips and alt windows and stuff first though.
 
@@ -219,6 +234,12 @@ Achievements would also be cool. Need to consider the impact on SaveData though.
 
 WORKS ON CANVAS
 ─│┌┐└┘├┤┬┴┼═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬▀▄█▌▐■▬▲►▼◄◦☺☻●░▒▓₸
+
+Dropshipper - Box opening?
+╔══╗
+║░░║
+╚══╝
+
 =========================================================================*/
 
 // #region Data
@@ -315,6 +336,7 @@ let AUTO_VALUE = {
 	pointer: 0.25,
 	worker: 0.4,
 	printer: 1,
+	dropshipper: 100,
 }
 
 let COST = {
@@ -385,20 +407,21 @@ function initialiseEventListeners(){
 	l("saveGame").addEventListener("click", function(){ saveGame(); })
 	l("newGame").addEventListener("click", function(){ newGame(); })
 	l("cheat").addEventListener("click", function(){
-		addTack((Math.random * 10) * 1234567);
+		addTack((Math.random() * 10) * 1234567);
 		buy("worker", 20, true);
 		buy("pointer", 20, true);
 		buy("printer", 20, true);
 	});
 	l("dummyBtn").addEventListener("click", function(){ dummyClick() });
 	l("statsBtn").addEventListener("click", function(){ openL("statsWindow"); })
-	l("closeStats").addEventListener("click", function(){ closeL("StatsWindow"); })
+	l("closeStats").addEventListener("click", function(){ closeL("statsWindow"); })
 	l("closeUpdate").addEventListener("click", function(){ closeL("updateWindow"); })
-	l("openChangelog").addEventListener("click", function(){ openL("changelogContent"); })
+	l("openChangelog").addEventListener("click", function(){ openChangelog(); })
+	l("openAchievements").addEventListener("click", function(){ openAchievements(); })
 }
 
 function dummyClick(){
-	// Use for whatever
+	openAchievements();
 }
 
 async function loadChangelog(){
@@ -440,6 +463,44 @@ async function openChangelog(){
 	container.style.display = 'block';
 }
 
+function openAchievements(){
+	// List all the achievements, and indicate what's done and what's not.
+	// Maybe show a visual thing of progression for numerical ones.
+
+	// Handles differently because achievementsUnlocked is a const rather than JSON.
+
+	const container = l("achievementsContent");
+	openL("achievementsContent");
+
+	container.innerHTML = `
+	<label id="closeAchievements" class="small button">Close</label>
+	<hr>
+	<label class="small">Achievements unlocked: ${_achievementsEarned} / ${totalAchievementsCount}</label>
+	`;
+
+
+	for(i = 0; i < milestones.length; i++){
+		var m = milestones[i];
+		var a = achievementsUnlocked[m.id] ? `<span style="color: green; font-weight: bold;">Yepp</span>` : `<span style="color: red; font-weight: bold;">Nope</span>`;
+		const section = document.createElement('div');
+		section.innerHTML += `
+		<h3 style="margin: 0px;">${m.label}</h3>
+		<div style="display: flex; justify-content: space-between;">
+			<label class="smallish">${m.description}</label>
+			<br>
+			<label class="small">Achieved: ${a}</label>
+		</div>
+		<hr>
+		`
+
+		container.appendChild(section);
+	}
+
+	l("closeAchievements").addEventListener("click", function(){ closeL("achievementsContent"); })
+
+	console.log(milestones[0].description);
+}
+
 async function loadAssets(){
 	const response = await fetch('../files/tacks/assets.json');
 	const data = await response.json();
@@ -455,18 +516,18 @@ async function createAssetSlices(){
 		section.id = `${asset}Slice`;
 		section.className = "slice";
 		section.innerHTML += `
-				<canvas id="${asset.ID}Canvas"></canvas>
-				<div class="widget buy">
-					<button id="${asset.ID}Btn">Buy ${asset.Name}</button>
-					<div>
-						<label class="small">+${asset.Produce} per ${asset.Type}</label><br>
-						<label class="small">Cost: <label class="small" id="${asset.ID}CostLbl">${asset.Cost}</label></label>
-						<br>
-						<label class="small">Owned:<label class="small" id="${asset.ID}OwnedLbl">0</label></label>
-					</div>
+			<canvas id="${asset.ID}Canvas"></canvas>
+			<div class="widget buy">
+				<button id="${asset.ID}Btn">Buy ${asset.Name}</button>
+				<div>
+					<label class="small">+${asset.Produce} per ${asset.Type}</label><br>
+					<label class="small">Cost: <label class="small" id="${asset.ID}CostLbl">${asset.Cost}</label></label>
+					<br>
+					<label class="small">Owned:<label class="small" id="${asset.ID}OwnedLbl">0</label></label>
 				</div>
-				<div class="line"></div>
-				`;
+			</div>
+			<div class="line"></div>
+		`
 	})		
 }
 
@@ -534,9 +595,6 @@ function create(type, amount){
 function calculateTPS(){
 	_tacksPerSecond = (AUTO_VALUE.worker * _workersOwned) +
 			(AUTO_VALUE.printer * _printersOwned);
-			// (AUTO_VALUE.worker * _workersOwned) +
-			// (AUTO_VALUE.worker * _workersOwned) +
-			// (AUTO_VALUE.worker * _workersOwned) +
 }
 
 function calculateTPC(){
@@ -567,18 +625,6 @@ function getValidPosition(canvas, exclusion, pb = 0, pt = 0, pl = 0, pr = 0){
     );
     return { x, y };
 }
-
-// Why did I make these??
-function getValidPositionX(canvas, exclusion, pb = 0, pt = 0, pl = 0, pr = 0){
-	let both = getValidPosition(canvas, exclusion, pb, pt, pl, pr);
-	return both[0];
-}
-
-function getValidPositionY(canvas, exclusion, pb = 0, pt = 0, pl = 0, pr = 0){
-	let both = getValidPosition(canvas, exclusion, pb, pt, pl, pr);
-	return both[1];
-}
-
 
 function wiggle(g, mouse, yMove, amplification = 1){
 	
@@ -624,6 +670,8 @@ function wiggle(g, mouse, yMove, amplification = 1){
 // #endregion
 
 const totalAchievementsCount = Object.entries(achievementsUnlocked).length;
+
+// #region Display
 
 // Called at FPS (1000 / 30);
 function refreshDisplay(){
@@ -767,7 +815,7 @@ let frame = 0;
 function animationHandler(){
 	// This runs the animated ASCII stuff, right now only the 3D printer.
 	frame += 1;
-	if(frame>31){ frame = 0 }
+	if(frame>29){ frame = 0 }
 	// console.log(frame);
 }
 
@@ -778,6 +826,7 @@ function runTicker(){
 	ticker.innerHTML = str;
 }
 
+// #endregion
 
 setInterval(runTicker, 17000);
 setInterval(renderFrame, FPS);

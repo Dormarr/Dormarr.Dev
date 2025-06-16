@@ -13,7 +13,7 @@ function newGame() {
 	onRefresh();
 	resetAchievements();
 	printNotification("New Game Started", COLOURS.green);
-	autosaveGame(false);
+	discreetSave();
 }
 
 function resetTime(){
@@ -51,7 +51,7 @@ async function getKey() {
 	return window.encryptionKey;
 }
 
-async function saveGame(autosave) {
+async function saveGame(discreet = false) {
 
 	await saveIntoData();
 
@@ -67,16 +67,16 @@ async function saveGame(autosave) {
 
 	localStorage.setItem("tacksSave", JSON.stringify(encryptedData));
 
-	if (!autosave) printNotification("Saved Game", getColor(COLOURS.green));
+	if (!discreet) printNotification("Saved Game", getColor(COLOURS.green));
 }
 
-function autosaveGame(notify = true) {
+function autosaveGame() {
 	saveGame(true);
-	if(!notify) {
-		console.log("Autosaved without notification.");
-		return;
-	}
 	printNotification("Autosaved", COLOURS.green, 2000);
+}
+
+function discreetSave(){
+	saveGame(true)
 }
 
 async function loadGame(newGame) {

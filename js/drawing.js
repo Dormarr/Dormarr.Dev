@@ -157,6 +157,17 @@ const CHAR_PRINTER = [
   "▀▀▀▀▀▀"],
 ];
 
+// I'm really not sure what to do for this.
+const CHAR_DROPPER = [
+	[
+		"",
+		"",
+		"",
+		"",
+		""
+	]
+]
+
 // #endregion
 
 // #region Pointers Render

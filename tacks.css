@@ -72,6 +72,13 @@ h3{
 	font-size: 24px;
 	text-align: left;
 }
+h4{
+	font-size: 20;
+	text-align: left;
+}
+&.left{
+	text-align: left;
+}
 li {
 	font-size: 16px;
 	text-align: start;
@@ -102,6 +109,15 @@ label{
 }
 label.small{
 	font-size: 16px;
+	padding: 2px;
+
+    &.button{
+        cursor: pointer;
+    }
+}
+label.smallish{
+	font-size: 18px;
+	font-weight: 100;
 	padding: 2px;
 
     &.button{
@@ -160,9 +176,11 @@ div.widget{
 }
 .show{
 	opacity: 1;
+	pointer-events: all;
 }
 .hide{
 	opacity: 0;
+	pointer-events: none;
 }
 .hidden{
 	display: none;

@@ -18,11 +18,19 @@ function debounce(func, delay) {
 }
 
 function openL(el){
-	l(el).classList.remove("hide");
-	l(el).classList.add("show");
+	try{
+		l(el).classList.remove("hide");
+		l(el).classList.add("show");
+	}catch(e){
+		console.warn(e);
+	}
 }
 
 function closeL(el){
-	l(el).classList.remove("show");
-	l(el).classList.add("hide");
+	try{
+		l(el).classList.remove("show");
+		l(el).classList.add("hide");
+	}catch(e){
+		console.warn(e);
+	}
 }
