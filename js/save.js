@@ -127,7 +127,7 @@ async function loadGame(newGame) {
 		DATA.version = parsed.version || getVersion();
 		_lastKnownTheme = parsed.theme || THEME.LIGHT;
 		_totalTacksEarned = parsed.totalTacksEarned || 0;
-		_achievements = parsed.achievements || getAchievementArray();
+		_achievements = parsed.achievements || await getAchievementArray();
 		_achievementsEarned = parsed.achievementsEarned || 0;
 		await saveIntoData();
 		onRefresh();

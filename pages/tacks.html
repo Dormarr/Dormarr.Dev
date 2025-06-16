@@ -149,16 +149,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="slice overlay show" id="updateWindow">
-		<div class="widget overlay" style="min-width: 400px; border: 2px solid var(--feature)">
-			<h2>UPDATE</h2>
-			<div style="display: flex; flex-direction: column;">
-				<label class="small">More achievements.</label>
-				<label class="small">Monitor progress from stats tab.</label>
-				<br>
-				<button id="closeUpdate">Close</button>
-			</div>
-		</div>
+	<div class="slice overlay" id="updateWindow">
 	</div>
 	<div class="slice overlay" id="changelogWindow">
 		<div id="changelogContent" class="widget changelog hide"></div>
@@ -381,6 +372,7 @@ const updateLabel = {
 // #endregion
 
 function bootstrap(){
+	loadGame();
 	createAssetSlices();
 	initialiseEventListeners();
 	setCopyright();
@@ -388,7 +380,6 @@ function bootstrap(){
 	updateWorker();
 	updatePrinter();
 	updateTack();
-	loadGame();
 
 	setInterval(refreshDisplay, 1000 / FPS);
 	setInterval(secondDisplay, 1000);
@@ -415,13 +406,35 @@ function initialiseEventListeners(){
 	l("dummyBtn").addEventListener("click", function(){ dummyClick() });
 	l("statsBtn").addEventListener("click", function(){ openL("statsWindow"); })
 	l("closeStats").addEventListener("click", function(){ closeL("statsWindow"); })
-	l("closeUpdate").addEventListener("click", function(){ closeL("updateWindow"); })
 	l("openChangelog").addEventListener("click", function(){ openChangelog(); })
 	l("openAchievements").addEventListener("click", function(){ openAchievements(); })
 }
 
 function dummyClick(){
-	openAchievements();
+	openUpdate();
+}
+
+function openUpdate(){
+	// Need a better system for this. Something more user friendly for my end.
+
+	//add into update window.
+	const container = l("updateWindow");
+	openL("updateWindow");
+
+
+	container.innerHTML = `
+		<div class="widget overlay" style="min-width: 400px; border: 2px solid var(--feature)">
+			<h2>UPDATE</h2>
+			<div style="display: flex; flex-direction: column;">
+				<label class="small">More achievements.</label>
+				<label class="small">Monitor progress from stats tab.</label>
+				<br>
+				<button id="closeUpdate">Close</button>
+			</div>
+		</div>
+	`
+
+	l("closeUpdate").addEventListener("click", function(){ closeL("updateWindow"); })
 }
 
 async function loadChangelog(){
@@ -485,7 +498,7 @@ function openAchievements(){
 		const section = document.createElement('div');
 		section.innerHTML += `
 		<h3 style="margin: 0px;">${m.label}</h3>
-		<div style="display: flex; justify-content: space-between;">
+		<div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
 			<label class="smallish">${m.description}</label>
 			<br>
 			<label class="small">Achieved: ${a}</label>
