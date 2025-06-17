@@ -1,57 +1,3 @@
-// #region Ascii Shared
-
-const WIGGLE_AMPLITUDE = 2; // max wiggle in pixels
-const WIGGLE_SPEED = 0.01;  // speed of wiggle
-const REPULSION_RADIUS = 450; // smaller radius so repulsion looks nicer
-const REPULSION_FORCE = 2; // how strongly guys get pushed away
-
-const MAX_SPRITE_COUNT = 256;
-
-const P_BASE_FONT_SIZE = 8;
-const W_BASE_FONT_SIZE = 12;
-const W_MAX_FONT_SIZE = 16;
-const P_MAX_FONT_SIZE = 13;
-const SCALE_RADIUS = 100;
-const ROT_RADIUS = 100; // UNUSED
-
-const canvasHeight = 200;
-
-let time = 0;
-
-function getExclusion(canvas, height = 150, width = 300){
-	return {
-    x: canvas.width / 2 - 175,
-    y: canvas.height / 2 - 90,
-    width: width,
-    height: height,
-	};
-}
-
-function createSprite(sprite, canvas, collection, amount, animated = false, pb = 0, pt = 0, pl = 0, pr = 0){
-	populateSprite(amount, sprite, canvas, collection, animated, pb, pt, pl, pr);
-}
-
-function populateSprite(count, sprite, canvas, collection, animated, pb = 0, pt = 0, pl = 0, pr = 0){
-	const exclusion = getExclusion(canvas);
-	count = Math.min(count, MAX_SPRITE_COUNT);	
-
-	// I need to find a way to move this to a sort of universal draw function.
-	let spr;
-	
-	for (let i = 0; i < count; i++) {
-		spr = animated ? sprite[0] : sprite[Math.floor(Math.random() * sprite.length)];
-		const {x: X, y:Y} = getValidPosition(canvas, exclusion, pb, pt, pl, pr)
-		collection.push({
-			homeX: X,
-			homeY: Y,
-			id: i,
-			sprite: spr
-		});
-	}
-}
-
-// #endregion
-
 // #region Art
 
 //reformat to be a central source for ASCII art.
@@ -60,7 +6,7 @@ const CHAR_TACK = [
 [ " Π ",
   " T " ]];
 
-const CHAR_GUY = [
+const CHAR_WORKER = [
 [
 	"  o  ",
 	" /#\\ ",
@@ -170,189 +116,182 @@ const CHAR_DROPPER = [
 
 // #endregion
 
-// #region Pointers Render
+// #region Ascii Shared
 
-function populatePointers(){
-	populateSprite(_pointersOwned, CHAR_POINTER, pointerCanvas, pointers);
+const WIGGLE_AMPLITUDE = 2; // max wiggle in pixels
+const WIGGLE_SPEED = 0.01;  // speed of wiggle
+const REPULSION_RADIUS = 450; // smaller radius so repulsion looks nicer
+const REPULSION_FORCE = 2; // how strongly guys get pushed away
+
+const MAX_SPRITE_COUNT = 256;
+
+const P_BASE_FONT_SIZE = 8;
+const W_BASE_FONT_SIZE = 12;
+const W_MAX_FONT_SIZE = 16;
+const P_MAX_FONT_SIZE = 13;
+
+const FONT_SIZE = {
+	pointer: {base: 8, max: 13},
+	worker: {base: 12, max: 16},
+	printer: {base: 12, max: 12}
 }
 
-function createPointer(amount){
-	_pointersOwned += amount;
-	createSprite(CHAR_POINTER, pointerCanvas, pointers, amount);
-}
+const SCALE_RADIUS = 100;
+const ROT_RADIUS = 100; // UNUSED
 
-const pointerCanvas = l("pointerCanvas");
-const pointerCtx = pointerCanvas.getContext("2d");
-pointerCanvas.width = window.innerWidth;
-pointerCanvas.height = canvasHeight;
+const CANVAS_HEIGHT= 200;
 
-let pointerCount = 0;
-const pointerMouse = { x: 0, y: 0 }
-const pointers = [];
+let time = 0;
 
-pointerCanvas.addEventListener("mousemove", e => {
-    const rect = pointerCanvas.getBoundingClientRect(); // get canvas position & size
-    pointerMouse.x = e.clientX - rect.left; // mouse x relative to canvas
-    pointerMouse.y = e.clientY - rect.top;  // mouse y relative to canvas
-});
+function behaviour(g, mouse, name){
+	
+	let yMove = 0;
+	let amplification = 1.5;
 
-function subtractPointer(amount = 1){
-	for(i = 0; i < amount; i++){
-		pointers.pop();
+	switch(name){
+		case "pointer":
+			amplification = 0.75;
+			yMove = 2;
+			break;
+		case "printer":
+			amplification = 0.2;
+			break;
 	}
+
+	const dx = g.homeX - mouse.x;
+	const dy = g.homeY - mouse.y;
+	const dist = Math.sqrt(dx * dx + dy * dy);
+
+	// Perlin noise wiggle
+	const noiseX = perlin(time + g.id * 10, 0, 0) * 2 - 1; // [-1, 1]
+	const noiseY = perlin(0, time + g.id * 10, 0) * 2 - 1;
+	const wiggleX = noiseX * WIGGLE_AMPLITUDE;
+	const wiggleY = noiseY * WIGGLE_AMPLITUDE;
+
+	let sinY = sinWave(wiggleY * yMove, 10);
+
+	let offsetX = wiggleX;
+	let offsetY = wiggleY + sinY;
+
+	// If within repulsion radius, push away from mouse
+	if (dist < REPULSION_RADIUS && dist > 0.01) {
+	const nx = dx / dist;
+	const ny = dy / dist;
+	const repulseStrength = (REPULSION_RADIUS - dist) / REPULSION_RADIUS * REPULSION_FORCE;
+	offsetX += nx * repulseStrength;
+	offsetY += ny * repulseStrength;
+	}
+
+	let scale = 1;
+	if(dist < SCALE_RADIUS){
+		const t= 1 - dist / SCALE_RADIUS;
+		scale = 1 + t * ((W_MAX_FONT_SIZE / W_BASE_FONT_SIZE) -1);
+	}
+
+	const drawX = g.homeX + offsetX * amplification;
+	const drawY = g.homeY + offsetY * amplification;
+	
+
+	const drawVector = [drawX, drawY, scale, sinY];
+
+	return drawVector;
 }
 
-function drawPointer(pointerSprite, x, y, scale) {
-    const pointerFontSize = P_BASE_FONT_SIZE * scale;
-    const lineHeight = pointerFontSize;
+function getExclusion(canvas, height = 150, width = 300){
+	return {
+    x: canvas.width / 2 - 175,
+    y: canvas.height / 2 - 90,
+    width: width,
+    height: height,
+	};
+}
 
-    pointerCtx.font = pointerFontSize + "px monospace";
-    pointerCtx.textBaseline = "top";
-    pointerCtx.fillStyle = getColor(COLOURS.ascii);
+function setupCanvas(id){
+	const canvas = l(id);
+	console.log(id);
+	canvas.width = window.innerWidth;
+	canvas.height = CANVAS_HEIGHT;
+	return [canvas, canvas.getContext('2d')];
+}
 
-    for (let i = 0; i < pointerSprite.length; i++) {
-        pointerCtx.fillText(pointerSprite[i], x, y + i * lineHeight);
+function setupRenderer(name, spriteArray, fontSize){
+	const [canvas, ctx] = setupCanvas(`${name}Canvas`);
+	const mouse = { x: 0, y: 0 };
+	const collection = [];
+	const state = { owned: 0 };
+
+	canvas.addEventListener("mousemove", e => {
+		const rect = canvas.getBoundingClientRect();
+		mouse.x = e.clientX - rect.left;
+		mouse.y = e.clientY - rect.top;
+	})
+
+	function update(){
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		//var pos = getValidPosition(canvas, getExclusion(canvas));
+
+		updateOwnedLabel();
+
+		time += WIGGLE_SPEED;
+		for(const entity of collection){
+			const [x, y, scale] = behaviour(entity, mouse, name);
+			drawSprite(ctx, entity.sprite, x, y, scale, fontSize);
+		}
+
+	}
+
+	function create(amount = 1, animated = false){
+		state.owned += amount;
+		createSprite(spriteArray, canvas, collection, amount, animated);
+	}
+
+	function subtract(amount = 1){
+		state.owned -= amount;
+		collection.splice(-amount);
+
+
+	}
+
+	function updateOwnedLabel(){
+		updateLabel[name + "sOwned"](_owned[name]);
+	}
+
+	return { canvas, ctx, mouse, collection, state, create, subtract, update, updateOwnedLabel};
+}
+
+function drawSprite(ctx, sprite, x, y, scale, fontSize){
+	const scaledSize = fontSize * scale;
+	ctx.font = `${scaledSize}px monospace`;
+	ctx.textBaseline = "top";
+	ctx.fillStyle = getColor(COLOURS.ascii);
+
+	for (let i = 0; i < sprite.length; i++) {
+        ctx.fillText(sprite[i], x, y + i * fontSize);
     }
 }
 
-
-
-function updatePointer() {
-    pointerCtx.clearRect(0, 0, pointerCanvas.width, pointerCanvas.height);
-    time += WIGGLE_SPEED;
-
-    pointers.forEach(p => {
-	const v = wiggle(p, pointerMouse, 1.2);
-        drawPointer(p.sprite, v[0], v[1], v[2]);
-    });
-    
-    requestAnimationFrame(updatePointer);
+function createSprite(sprite, canvas, collection, amount, animated = false, pb = 0, pt = 0, pl = 0, pr = 0){
+	populateSprite(amount, sprite, canvas, collection, animated, pb, pt, pl, pr);
 }
 
-// #endregion
+function populateSprite(count, sprite, canvas, collection, animated, pb = 0, pt = 0, pl = 0, pr = 0){
+	const exclusion = getExclusion(canvas);
+	count = Math.min(count, MAX_SPRITE_COUNT);	
 
-// #region Guys Render
-
-function populateGuys(){
-	populateSprite(_workersOwned, CHAR_GUY, workerCanvas, workers);
-}
-
-function createWorker(amount){
-	_workersOwned += amount;
-	createSprite(CHAR_GUY, workerCanvas, workers, amount);
-}
-
-const workerCanvas = l("workerCanvas");
-const workerCtx = workerCanvas.getContext("2d");
-workerCanvas.width = window.innerWidth;
-workerCanvas.height = canvasHeight;
-
-const workerMouse = { x: 0, y: 0 };
-const workers = [];
-
-workerCanvas.addEventListener("mousemove", e => {
-	const rect = workerCanvas.getBoundingClientRect();
-	workerMouse.x = e.clientX - rect.left; // mouse x relative to canvas
-	workerMouse.y = e.clientY - rect.top;  // mouse y relative to canvas
-});
-
-function subtractGuy(amount = 1){
-	for(i = 0; i < amount; i++){
-		workers.pop();
-	}
-}
-
-function drawGuy(guySprite, x, y, scale) {
-	const fontSize = W_BASE_FONT_SIZE * scale;
-	const lineHeight = fontSize;
-
-	workerCtx.font = fontSize + "px monospace";
-	workerCtx.textBaseline = "top";
-	workerCtx.fillStyle = getColor(COLOURS.ascii);
-	for (let i = 0; i < guySprite.length; i++) {
-		workerCtx.fillText(guySprite[i], x, y + i * lineHeight);
-	}
-}
-
-function updateWorker() {
-	workerCtx.clearRect(0, 0, workerCanvas.width, workerCanvas.height);
-	time += WIGGLE_SPEED;
-
-	workers.forEach(g => {
-		const v = wiggle(g, workerMouse, 0);
-		drawGuy(g.sprite, v[0], v[1], v[2]);
-	});
-
-	requestAnimationFrame(updateWorker);
-}
-
-// #endregion
-
-// #region Printer Render
-
-function populatePrinter(){
-	populateSprite(_printersOwned, CHAR_PRINTER, printerCanvas, printers);
-}
-
-function createPrinter(amount = 1){
-	_printersOwned += amount;
-	createSprite(CHAR_PRINTER, printerCanvas, printers, amount, true);
-}
-
-const printerCanvas = l("printerCanvas");
-const printerCtx = printerCanvas.getContext("2d");
-printerCanvas.width = window.innerWidth;
-printerCanvas.height = canvasHeight;
-
-const PRNTR_BASE_FONT_SIZE = 12;
-const printerMouse = { x: 0, y: 0 };
-let printers = [];
-
-printerCanvas.addEventListener("mousemove", e => {
-	const rect = printerCanvas.getBoundingClientRect();
-	printerMouse.x = e.clientX - rect.left; // mouse x relative to canvas
-	printerMouse.y = e.clientY - rect.top;  // mouse y relative to canvas
-});
-
-function drawPrinter(printerSprite, x, y, scale, animated = false){
-	const printerFontSize = PRNTR_BASE_FONT_SIZE * scale;
-	const lineHeight = printerFontSize;// * 0.75;
-
-	printerCtx.font = `${printerFontSize}px monospace`;
-	printerCtx.textBaseline = "top";
-	printerCtx.fillStyle = getColor(COLOURS.ascii);	
+	// I need to find a way to move this to a sort of universal draw function.
+	let spr;
 	
-	for(let i = 0; i < printerSprite.length; i++){
-		
-		f = Math.floor((frame + 1) % 8 );
-
-
-		spr = animated ? CHAR_PRINTER[f][i] : printerSprite[i];
-		printerCtx.fillText(spr, x , y + i * lineHeight);
+	for (let i = 0; i < count; i++) {
+		spr = animated ? sprite[0] : sprite[Math.floor(Math.random() * sprite.length)];
+		const {x: X, y:Y} = getValidPosition(canvas, exclusion, pb, pt, pl, pr)
+		collection.push({
+			homeX: X,
+			homeY: Y,
+			id: i,
+			sprite: spr
+		});
 	}
 }
-
-function updatePrinter(){
-	// clearCanvas(printerCanvas);
-	printerCtx.clearRect(0, 0, printerCanvas.width, printerCanvas.height);
-
-	var pos = getValidPosition(printerCanvas, getExclusion(printerCanvas));
-
-	printers.forEach(p => {
-		const v = wiggle(p, printerMouse, 0.3, 0.2)
-		drawPrinter(p.sprite, v[0], v[1], v[2], true);
-	})
-
-	requestAnimationFrame(updatePrinter);
-}
-
-function subtractPrinter(amount = 1){
-	for(let i = 0; i < amount; i++){
-		printers.pop();
-	}
-}
-
-// #endregion
 
 // #region Tack Render
 
@@ -368,7 +307,7 @@ function populateTack(){
 const tackCanvas = l("tackCanvas");
 const tackCtx = tackCanvas.getContext("2d");
 tackCanvas.width = window.innerWidth;
-tackCanvas.height = canvasHeight;
+tackCanvas.height = CANVAS_HEIGHT;
 
 const T_BASE_FONT_SIZE = 18;
 const yVelocity = 2;
@@ -397,7 +336,7 @@ function updateTack() {
 	tacks.forEach(p => {
 		p.homeY += Math.random() * yVelocity + 1;
 		const v = wiggle(p, tackMouse, 0);
-		drawTack(p.sprite, v[0], p.homeY - canvasHeight, v[2]);
+		drawTack(p.sprite, v[0], p.homeY - CANVAS_HEIGHT, v[2]);
 	});
 	
 	requestAnimationFrame(updateTack);

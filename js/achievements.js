@@ -25,15 +25,15 @@ setInterval(getAchievementArray, 2500);
 function checkAchievements(){
 	milestones = [
 		{ id: 'firstTack', condition: _tacks >= 1, label: 'The First Tack', description: 'Recieve your first tack.'},
-		{ id: 'unskilledLabour', condition: _workersOwned >= 1, label: 'Buy a mans time', description: 'Buy a worker.'},
+		{ id: 'unskilledLabour', condition: _owned.worker >= 1, label: 'Buy a mans time', description: 'Buy a worker.'},
 		{ id: 'daysWork', condition: _playedTimeElapsed > 86400, label: 'All in a days work', description: 'Play for 24 hours.'},
 		{ id: 'eatTheRich', condition: _tacks >= 1000000000, label: 'Eat the rich', description: 'Reach 1 billion tacks.'},
 		{ id: 'million', condition: _tacks >= 1000000, label: 'A cool mil', description: 'Reach 1 million tacks.'},
 		{ id: 'thousandClicks', condition: _clicks >= 1000, label: 'Obsessive Clicker', description: 'Click 1000 times.'},
 		{ id: 'handOfGod', condition: _tacksPerClick >= 1000, label: 'Hand of God', description: '1000 tacks per click.'},
-		{ id: 'capitalistUtopia', condition: GetMaxCost() >= Infinity, label: 'Capitalist Utopia', description: 'Reach infinite cost on product.'},
+		{ id: 'capitalistUtopia', condition: GetMaxCost() >= Infinity, label: 'Capitalist Utopia (BROKEN)', description: 'Reach infinite cost on product.'},
 		{ id: 'passiveIncome', condition: _tacksPerSecond >= 1000, label: 'Passive Income', description: '1000 tacks per second.'},
-		{ id: 'homeProduction', condition: _printersOwned >= 1, label: 'Home Production', description: 'Buy a 3D printer.'},
+		{ id: 'homeProduction', condition: _owned.printer >= 1, label: 'Home Production', description: 'Buy a 3D printer.'},
 	]
 	
 	milestones.forEach(m => {

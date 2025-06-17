@@ -264,10 +264,14 @@ let _tacks = 0;
 let _tacksPerSecond;
 let _tacksPerClick;
 
-let _pointersOwned;
-let _workersOwned;
-let _printersOwned;
-let _droppersOwned;
+let _seed = 0;
+
+const _owned = {
+	pointer: 0,
+	worker: 0,
+	printer: 0,
+	dropshipper: 0,
+}
 
 let _totalTacksEarned = 0;
 let _totalHandmadeTacks = 0;
@@ -290,7 +294,7 @@ const DATA = {
 	pointersOwned: 0,
 	workersOwned: 0,
 	printersOwned: 0,
-	droppersOwned: 0,
+	dropshippersOwned: 0,
 	playedTime: 0,
 	theme: _lastKnownTheme || THEME.LIGHT,
 	achievements: 0,
@@ -330,6 +334,13 @@ let AUTO_VALUE = {
 	dropshipper: 100,
 }
 
+let DEFAULT_COST = {
+	pointer: 20,
+	worker: 100,
+	printer: 400,
+	dropshipper: 1000,
+}
+
 let COST = {
 	pointer: 20,
 	worker: 100,
@@ -362,7 +373,7 @@ const updateLabel = {
 	pointerCost: (val) => { l("pointerCostLbl").textContent = val; },
 	workerCost: (val) => { l("workerCostLbl").textContent = val; },
 	printerCost: (val) => { l("printerCostLbl").textContent = val; },
-	dropperCost: (val) => { l("dropperCostLbl").textContent = val; },
+	dropshipperCost: (val) => { l("dropshipperCostLbl").textContent = val; },
 
 	tacksEarned: (val) => { l("tacksEarnedLbl").textContent = val; },
 	totalClicks: (val) => { l("totalClicksLbl").textContent = val; },
@@ -371,14 +382,16 @@ const updateLabel = {
 
 // #endregion
 
+const pointers = setupRenderer("pointer", CHAR_POINTER, FONT_SIZE.pointer.base);
+const workers = setupRenderer("worker", CHAR_WORKER, FONT_SIZE.worker.base);
+const printers = setupRenderer("printer", CHAR_PRINTER, FONT_SIZE.printer.base)
+
 function bootstrap(){
 	loadGame();
 	createAssetSlices();
 	initialiseEventListeners();
 	setCopyright();
-	updatePointer();
-	updateWorker();
-	updatePrinter();
+	
 	updateTack();
 
 	setInterval(refreshDisplay, 1000 / FPS);
@@ -394,25 +407,31 @@ function initialiseEventListeners(){
 	l("pointerBtn").addEventListener("click", context =>{ buy("pointer"); });
 	l("workerBtn").addEventListener("click", context =>{ buy("worker"); });
 	l("printerBtn").addEventListener("click", context => { buy("printer"); });
-	l("toggleDark").addEventListener("click", function(){ toggleTheme(); });
-	l("saveGame").addEventListener("click", function(){ saveGame(); })
-	l("newGame").addEventListener("click", function(){ newGame(); })
-	l("cheat").addEventListener("click", function(){
-		addTack((Math.random() * 10) * 1234567);
-		buy("worker", 20, true);
-		buy("pointer", 20, true);
-		buy("printer", 20, true);
-	});
-	l("dummyBtn").addEventListener("click", function(){ dummyClick() });
-	l("statsBtn").addEventListener("click", function(){ openL("statsWindow"); })
-	l("closeStats").addEventListener("click", function(){ closeL("statsWindow"); })
-	l("openChangelog").addEventListener("click", function(){ openChangelog(); })
-	l("openAchievements").addEventListener("click", function(){ openAchievements(); })
+	l("toggleDark").addEventListener("click", function() { toggleTheme() });
+	l("saveGame").addEventListener("click", function() { saveGame() })
+	l("newGame").addEventListener("click", function() { newGame() })
+	l("cheat").addEventListener("click", function() { cheat() });
+	l("dummyBtn").addEventListener("click", function() { dummyClick() });
+	l("statsBtn").addEventListener("click", function() { openL("statsWindow") })
+	l("closeStats").addEventListener("click", function() { closeL("statsWindow") })
+	l("openChangelog").addEventListener("click", function() { openChangelog() })
+	l("openAchievements").addEventListener("click", function() { openAchievements() })
 }
 
 function dummyClick(){
-	openUpdate();
+	// openUpdate();
+	console.log("THIS GUY " + COST[1]);
+	cheat();
 }
+
+function cheat(){
+	addTack((Math.random() * 10) * 1234567);
+	buy("worker", 20, true);
+	buy("pointer", 20, true);
+	buy("printer", 20, true);
+}
+
+// #region Dynamic HTML
 
 function openUpdate(){
 	// Need a better system for this. Something more user friendly for my end.
@@ -510,8 +529,6 @@ function openAchievements(){
 	}
 
 	l("closeAchievements").addEventListener("click", function(){ closeL("achievementsContent"); })
-
-	console.log(milestones[0].description);
 }
 
 async function loadAssets(){
@@ -544,7 +561,9 @@ async function createAssetSlices(){
 	})		
 }
 
-// #region Game Logic
+// #endregion
+
+// #region Logic
 
 async function onRefresh(){
 	forceUpdateTheme();
@@ -552,15 +571,26 @@ async function onRefresh(){
 }
 
 async function repopulate(){
-	// clearCanvas(pointerCanvas);
-	// clearCanvas(workerCanvas);
-	subtractGuy(workers.length);
-	subtractPointer(pointers.length);
-	subtractPrinter(printers.length);
+	pointers.subtract(pointers.state.owned);
+	workers.subtract(workers.state.owned);
+	printers.subtract(printers.state.owned);
+	create("pointer", _owned.pointer);
+	create("worker", _owned.worker);
+	create("printer", _owned.printer);
+}
 
-	populateGuys();
-	populatePointers();
-	populatePrinter();
+function create(type, amount){
+	switch(type){
+		case "pointer":
+			pointers.create(amount);
+			break;
+		case "worker":
+			workers.create(amount);
+			break;
+		case "printer":
+			printers.create(amount);
+			break;
+	}
 }
 
 function clearCanvas(canvas){
@@ -591,27 +621,14 @@ function addToLabel(name, amount) {
 
 function subtractTacks(amount){ _tacks -= amount; }
 
-function create(type, amount){
-	switch(type){
-		case "worker":
-			createWorker(amount);
-			break;
-		case "pointer":
-			createPointer(amount);
-			break;
-		case "printer":
-			createPrinter(amount);
-			break;
-	}
-}
 
 function calculateTPS(){
-	_tacksPerSecond = (AUTO_VALUE.worker * _workersOwned) +
-			(AUTO_VALUE.printer * _printersOwned);
+	_tacksPerSecond = (AUTO_VALUE.worker * _owned.worker) +
+			(AUTO_VALUE.printer * _owned.printer);
 }
 
 function calculateTPC(){
-	_tacksPerClick = (AUTO_VALUE.pointer * _pointersOwned) + 1;
+	_tacksPerClick = (AUTO_VALUE.pointer * _owned.pointer) + 1;
 }
 // #endregion
 
@@ -639,47 +656,6 @@ function getValidPosition(canvas, exclusion, pb = 0, pt = 0, pl = 0, pr = 0){
     return { x, y };
 }
 
-function wiggle(g, mouse, yMove, amplification = 1){
-	
-	const dx = g.homeX - mouse.x;
-	const dy = g.homeY - mouse.y;
-	const dist = Math.sqrt(dx * dx + dy * dy);
-
-	// Perlin noise wiggle
-	const noiseX = perlin(time + g.id * 10, 0, 0) * 2 - 1; // [-1, 1]
-	const noiseY = perlin(0, time + g.id * 10, 0) * 2 - 1;
-	const wiggleX = noiseX * WIGGLE_AMPLITUDE;
-	const wiggleY = noiseY * WIGGLE_AMPLITUDE;
-
-	let sinY = sinWave(wiggleY * yMove, 10);
-
-	let offsetX = wiggleX;
-	let offsetY = wiggleY + sinY;
-
-	// If within repulsion radius, push away from mouse
-	if (dist < REPULSION_RADIUS && dist > 0.01) {
-	const nx = dx / dist;
-	const ny = dy / dist;
-	const repulseStrength = (REPULSION_RADIUS - dist) / REPULSION_RADIUS * REPULSION_FORCE;
-	offsetX += nx * repulseStrength;
-	offsetY += ny * repulseStrength;
-	}
-
-	let scale = 1;
-	if(dist < SCALE_RADIUS){
-		const t= 1 - dist / SCALE_RADIUS;
-		scale = 1 + t * ((W_MAX_FONT_SIZE / W_BASE_FONT_SIZE) -1);
-	}
-
-	const drawX = g.homeX + offsetX * amplification;
-	const drawY = g.homeY + offsetY * amplification;
-	
-
-	const drawVector = [drawX, drawY, scale, sinY];
-
-	return drawVector;
-}
-
 // #endregion
 
 const totalAchievementsCount = Object.entries(achievementsUnlocked).length;
@@ -692,18 +668,28 @@ function refreshDisplay(){
 	calculateTPC();
 	_tacks += _tacksPerSecond / FPS;
 	_totalTacksEarned += _tacksPerSecond / FPS
+	updateLabels();
+	requestAnimationFrame(pointers.update);
+	requestAnimationFrame(workers.update);
+	requestAnimationFrame(printers.update);
+	
+}//buffalo
+
+function updateLabels(){
 	updateLabel["tacks"](numberWithCommas(Math.floor(_tacks)));
 	updateLabel["tps"](_tacksPerSecond.toFixed(2) + " tps");
 	updateLabel["dateTime"](new Date().toLocaleString());
 	updateLabel["playTime"](`Played Time: ${convertTime(_playedTimeElapsed)}`);
 	updateLabel["upTime"](`Up Time: ${convertTime(_upTimeElapsed)}`);
-	updateLabel["workersOwned"](_workersOwned);
-	updateLabel["pointersOwned"](_pointersOwned);
-	updateLabel["printersOwned"](_printersOwned);
+	// pointers.updateOwnedLabel();
+	// workers.updateOwnedLabel();
+	// printers.updateOwnedLabel();
+	updateLabel["pointerCost"](COST.pointer);
 	updateLabel["tacksEarned"](`Total tacks earned: ${numberWithCommas(Math.floor(_totalTacksEarned))}`);
 	updateLabel["totalClicks"](`Total clicks: ${_clicks}`);
 	updateLabel["achievementsEarned"](`Achievements unlocked: ${_achievementsEarned} / ${totalAchievementsCount}`);
-}//buffalo
+
+}
 
 // Called per second
 function secondDisplay(){

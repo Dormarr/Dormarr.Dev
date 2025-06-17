@@ -3,17 +3,19 @@
 function newGame() {
 
 	// Should probably have an "Are you sure" bit before actually reseting.
-
+	console.log("New Game triggered.");
 	localStorage.removeItem("tacksSave");
 	loadGame(true);
 	resetTime();
-	subtractGuy(workers.length);
-	subtractPointer(pointers.length);
-	subtractPrinter(printers.length);
+	pointers.subtract(_owned.pointer);
+	workers.subtract(_owned.worker);
+	printers.subtract(_owned.printer);
 	onRefresh();
+	resetPrices();
 	resetAchievements();
 	printNotification("New Game Started", COLOURS.green);
 	discreetSave();
+	console.log("New Game complete.");
 }
 
 function resetTime(){
@@ -87,10 +89,9 @@ async function loadGame(newGame) {
 		_totalTacksEarned = 0;
 		_seed = generateSeed();
 		_tacks =  0;
-		_pointersOwned = 0;
-		_workersOwned = 0;
-		_printersOwned = 0;
-		_droppersOwned = 0;
+		for(let i = 0; i < _owned.length; i++){
+			_owned[i] = 0;
+		}
 		_playedTimeElapsed = 0;
 		_clicks = 0;
 		DATA.version = getVersion();
@@ -119,10 +120,10 @@ async function loadGame(newGame) {
 		_seed = parsed.seed || generateSeed();
 		_tacks = parsed.tacks || 0;
 		_clicks = parsed.clicks || 0;
-		_pointersOwned = parsed.pointersOwned || 0;
-		_workersOwned = parsed.workersOwned || 0;
-		_printersOwned = parsed.printersOwned || 0;
-		_droppersOwned = parsed._droppersOwned || 0;
+		_owned.pointer = parsed.pointersOwned || 0;
+		_owned.worker = parsed.workersOwned || 0;
+		_owned.printer = parsed.printersOwned || 0;
+		_owned.dropshipper = parsed.dropshippersOwned || 0;
 		_playedTimeElapsed = parsed.playedTime || 0;
 		DATA.version = parsed.version || getVersion();
 		_lastKnownTheme = parsed.theme || THEME.LIGHT;
@@ -149,10 +150,10 @@ async function saveIntoData(){
 	DATA.seed = _seed;
 	DATA.tacks = _tacks;
 	DATA.clicks = _clicks;
-	DATA.pointersOwned = _pointersOwned;
-	DATA.workersOwned = _workersOwned;
-	DATA.printersOwned = _printersOwned;
-	DATA.droppersOwned = _droppersOwned;
+	DATA.pointersOwned = _owned.pointer;
+	DATA.workersOwned = _owned.worker;
+	DATA.printersOwned = _owned.printer;
+	DATA.dropshippersOwned = _owned.dropshipper;
 	DATA.playedTime = _playedTimeElapsed;
 	DATA.theme = _lastKnownTheme;
 	DATA.totalTacksEarned = _totalTacksEarned;

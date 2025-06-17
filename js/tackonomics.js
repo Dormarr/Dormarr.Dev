@@ -10,6 +10,7 @@ function buy(type, amount = 1, cheat = false){
 		subtractTacks(price);
 		inflatePrice(type);
 		create(type, amount);
+		_owned[type] += amount;
 		printNotification("Bought: " + amount + "x " + type, COLOURS.text, 2000);
 		return true;
 	}
@@ -38,6 +39,14 @@ function catchUpInflation(){
 			inflatePrice(asset);
 		}	
 		//console.log(`Inflated ${asset} ${rounds} times.`);
+	}
+}
+
+function resetPrices(){
+	
+	for(let a = 0; a < COST.length; a++){
+		COST[a] = DEFAULT_COST[a];
+		updateLabel[COST[a] + "Cost"](COST[a]);	
 	}
 }
 
