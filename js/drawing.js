@@ -125,20 +125,14 @@ const REPULSION_FORCE = 2; // how strongly guys get pushed away
 
 const MAX_SPRITE_COUNT = 256;
 
-const P_BASE_FONT_SIZE = 8;
-const W_BASE_FONT_SIZE = 12;
-const W_MAX_FONT_SIZE = 16;
-const P_MAX_FONT_SIZE = 13;
-
 const FONT_SIZE = {
-	pointer: {base: 8, max: 13},
+	pointer: {base: 8, max: 12},
 	worker: {base: 12, max: 16},
-	printer: {base: 12, max: 12},
+	printer: {base: 12, max: 14},
 	tack: {base: 18, max: 18},
 }
 
-const SCALE_RADIUS = 100;
-const ROT_RADIUS = 100; // UNUSED
+const SCALE_RADIUS = 75;
 
 const CANVAS_HEIGHT= 200;
 
@@ -189,7 +183,7 @@ function behaviour(g, mouse, name){
 	let scale = 1;
 	if(dist < SCALE_RADIUS){
 		const t= 1 - dist / SCALE_RADIUS;
-		scale = 1 + t * ((W_MAX_FONT_SIZE / W_BASE_FONT_SIZE) -1);
+		scale = 1 + t * ((FONT_SIZE[name].max / FONT_SIZE[name].base) -1);
 	}
 
 	const drawX = g.homeX + offsetX * amplification;
@@ -222,7 +216,7 @@ function setupRenderer(name, spriteArray, fontSize){
 	const mouse = { x: 0, y: 0 };
 	let collection = [];
 	const state = { owned: 0 };
-	const yVel = (name === "tack") ? (Math.random() * 10 + 2) : 0;
+	const yVel = (name === "tack") ? 4 : 0;
 	const lineHeightMult = (name === "tack") ? 0.5 : 1;
 
 	canvas.addEventListener("mousemove", e => {
@@ -239,7 +233,7 @@ function setupRenderer(name, spriteArray, fontSize){
 
 			// time += WIGGLE_SPEED;
 			for(const p of collection){
-				p.homeY += Math.random() * yVel + 1;
+				p.homeY += yVel + (Math.random() * 4);
 				const [x, y, scale] = behaviour(p, mouse, name);
 				drawSprite(name, ctx, p.sprite, x, p.homeY - CANVAS_HEIGHT, scale, FONT_SIZE.tack.base, lineHeightMult);
 			};
@@ -284,7 +278,7 @@ function drawSprite(name, ctx, sprite, x, y, scale, fontSize, lineHeightMult = 1
 	ctx.font = `${scaledSize}px monospace`;
 	ctx.textBaseline = "top";
 	ctx.fillStyle = getColor(COLOURS.ascii);
-	let lineHeight = fontSize * lineHeightMult;
+	let lineHeight = fontSize * lineHeightMult * scale;
 
 	let animated = (name == "printer") ? true : false;
 
@@ -318,54 +312,3 @@ function populateSprite(count, sprite, canvas, collection, animated, pb = 0, pt 
 		});
 	}
 }
-
-// #region Tack Render
-
-// function createTack(amount = 1) {
-// 	if(tacks.length >= MAX_SPRITE_COUNT) return;
-// 	createSprite(CHAR_TACK, tackCanvas, tacks, amount)
-// }
-
-// function populateTack(){
-// 	populateSprite(tackCount, CHAR_TACK, tackCanvas, tacks);
-// }
-
-// const tackCanvas = l("tackCanvas");
-// const tackCtx = tackCanvas.getContext("2d");
-// tackCanvas.width = window.innerWidth;
-// tackCanvas.height = CANVAS_HEIGHT;
-
-// const T_BASE_FONT_SIZE = 18;
-// const yVelocity = 2;
-// let tackCount = 0;
-// const tackMouse = { x: 0, y: 0 };
-// let tacks = [];
-
-// function drawTack(tackSprite, x, y, scale) {
-// 	const tackFontSize = T_BASE_FONT_SIZE * scale;
-// 	const lineHeight = tackFontSize / 2;
-
-// 	tackCtx.font = `${tackFontSize}px monospace`;
-// 	tackCtx.textBaseline = "top";
-// 	tackCtx.fillStyle = getColor(COLOURS.ascii);
-
-// 	for (let i = 0; i < tackSprite.length; i++) {
-// 		tackCtx.fillText(tackSprite[i], x, y + i * lineHeight);
-// 	}
-// }
-
-// function updateTack() {
-// 	const yVel = 4;
-	
-// 	tacksRenderer.collection = tacksRenderer.collection.filter(p => p.homeY < tacksRenderer.Canvas.height);
-
-// 	tacksRenderer.collection.forEach(p => {
-// 		p.homeY += Math.random() * yVel + 1;
-// 		const v = behaviour(p, tacksRenderer.mouse, "tack");
-// 		drawSprite(tacksRenderer.ctx, p.sprite, v[0], p.homeY - CANVAS_HEIGHT, v[2], FONT_SIZE.tack.base);
-// 	});
-	
-// 	requestAnimationFrame(updateTack);
-// }
-
-// #endregion

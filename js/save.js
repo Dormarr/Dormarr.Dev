@@ -157,11 +157,11 @@ async function saveIntoData(){
 	DATA.pointersOwned = _owned.pointer;
 	DATA.workersOwned = _owned.worker;
 	DATA.printersOwned = _owned.printer;
-	DATA.dropshippersOwned = _owned.dropshipper;
+	// DATA.dropshippersOwned = _owned.dropshipper;
 	DATA.playedTime = _playedTimeElapsed;
 	DATA.theme = _lastKnownTheme;
 	DATA.totalTacksEarned = _totalTacksEarned;
-	DATA.achievements = _achievements;
+	DATA.achievements = await getAchievementArray();
 	DATA.achievementsEarned = _achievementsEarned;
 
 	return;
