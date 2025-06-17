@@ -10,6 +10,9 @@ function newGame() {
 	pointers.subtract(_owned.pointer);
 	workers.subtract(_owned.worker);
 	printers.subtract(_owned.printer);
+	_owned.pointer = 0;
+	_owned.worker = 0;
+	_owned.printer = 0;
 	onRefresh();
 	resetPrices();
 	resetAchievements();
@@ -92,6 +95,7 @@ async function loadGame(newGame) {
 		for(let i = 0; i < _owned.length; i++){
 			_owned[i] = 0;
 		}
+		printers.subtract(_owned.printer);
 		_playedTimeElapsed = 0;
 		_clicks = 0;
 		DATA.version = getVersion();
@@ -143,7 +147,7 @@ async function loadGame(newGame) {
 	updateLabel["pointerCost"](COST.pointer);
 	updateLabel["workerCost"](COST.worker);
 	updateLabel["printerCost"](COST.printer);
-	updateLabel["dropperCost"](COST.dropshipper);
+	// updateLabel["dropperCost"](COST.dropshipper);
 }
 
 async function saveIntoData(){

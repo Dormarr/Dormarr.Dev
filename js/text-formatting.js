@@ -134,12 +134,12 @@ function getNewTicker(){
 		`<q>Buffalo</q><sig>  -CMH</sig>`,
 	]));
 	
-	if(_pointersOwned > 10 & Math.random() < 0.1){ list.push(choose([
+	if(_owned.printer > 10 & Math.random() < 0.1){ list.push(choose([
 		`<q>Reap the tacks of a pointed finger.</q><sig>  -Unknown</sig>`,
 		`<q>Two hands do less work than ten fingers</q><sig>  -Unknown</sig>`
 	]));}
 	
-	if(_workersOwned > 10 & Math.random() < 0.1){ list.push(choose([
+	if(_owned.worker > 10 & Math.random() < 0.1){ list.push(choose([
 		`<p class="ticker">NEWS : Workers flocking to growing markets.</p>`,
 		`<p class="ticker">NEWS : Sellotape factory set ablaze.</p>`,
 	]));}

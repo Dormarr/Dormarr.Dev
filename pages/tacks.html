@@ -384,15 +384,14 @@ const updateLabel = {
 
 const pointers = setupRenderer("pointer", CHAR_POINTER, FONT_SIZE.pointer.base);
 const workers = setupRenderer("worker", CHAR_WORKER, FONT_SIZE.worker.base);
-const printers = setupRenderer("printer", CHAR_PRINTER, FONT_SIZE.printer.base)
+const printers = setupRenderer("printer", CHAR_PRINTER, FONT_SIZE.printer.base);
+const tacksRenderer = setupRenderer("tack", CHAR_TACK, FONT_SIZE.tack.base);
 
 function bootstrap(){
 	loadGame();
 	createAssetSlices();
 	initialiseEventListeners();
 	setCopyright();
-	
-	updateTack();
 
 	setInterval(refreshDisplay, 1000 / FPS);
 	setInterval(secondDisplay, 1000);
@@ -588,7 +587,10 @@ function create(type, amount){
 			workers.create(amount);
 			break;
 		case "printer":
-			printers.create(amount);
+			printers.create(amount, true);
+			break;
+		case "tack":
+			tacksRenderer.create(amount);
 			break;
 	}
 }
@@ -601,7 +603,7 @@ function clearCanvas(canvas){
 function addTack(amount){
 	_totalTacksEarned += amount;
 	_tacks += amount;
-	createTack(amount);
+	create("tack", amount);
 }
 
 function addToLabel(name, amount) {
@@ -669,9 +671,11 @@ function refreshDisplay(){
 	_tacks += _tacksPerSecond / FPS;
 	_totalTacksEarned += _tacksPerSecond / FPS
 	updateLabels();
+
 	requestAnimationFrame(pointers.update);
 	requestAnimationFrame(workers.update);
 	requestAnimationFrame(printers.update);
+	requestAnimationFrame(tacksRenderer.update);
 	
 }//buffalo
 
@@ -681,9 +685,6 @@ function updateLabels(){
 	updateLabel["dateTime"](new Date().toLocaleString());
 	updateLabel["playTime"](`Played Time: ${convertTime(_playedTimeElapsed)}`);
 	updateLabel["upTime"](`Up Time: ${convertTime(_upTimeElapsed)}`);
-	// pointers.updateOwnedLabel();
-	// workers.updateOwnedLabel();
-	// printers.updateOwnedLabel();
 	updateLabel["pointerCost"](COST.pointer);
 	updateLabel["tacksEarned"](`Total tacks earned: ${numberWithCommas(Math.floor(_totalTacksEarned))}`);
 	updateLabel["totalClicks"](`Total clicks: ${_clicks}`);
@@ -693,7 +694,7 @@ function updateLabels(){
 
 // Called per second
 function secondDisplay(){
-	createTack(_tacksPerSecond);
+	create("tack", _tacksPerSecond);
 	updateLabel["title"](`${Math.floor(_tacks)} Tacks!`);
 	
 	//Move to initialisation
@@ -775,12 +776,6 @@ function resizeCanvas(canvas, collection) {
 	const exclusion = getExclusion(canvas);
 
 	requestAnimationFrame(() => repopulate());
-
-	// requestAnimationFrame(() => {
-	// 	collection.forEach(g => {
-	// 		g.homeX = getValidPositionX(canvas, exclusion);
-	// 	});
-	// });
 }
 
 function renderFrame() {
@@ -810,7 +805,7 @@ let frame = 0;
 function animationHandler(){
 	// This runs the animated ASCII stuff, right now only the 3D printer.
 	frame += 1;
-	if(frame>29){ frame = 0 }
+	if(frame>31){ frame = 0 }
 	// console.log(frame);
 }
 

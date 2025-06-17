@@ -133,7 +133,8 @@ const P_MAX_FONT_SIZE = 13;
 const FONT_SIZE = {
 	pointer: {base: 8, max: 13},
 	worker: {base: 12, max: 16},
-	printer: {base: 12, max: 12}
+	printer: {base: 12, max: 12},
+	tack: {base: 18, max: 18},
 }
 
 const SCALE_RADIUS = 100;
@@ -155,6 +156,9 @@ function behaviour(g, mouse, name){
 			break;
 		case "printer":
 			amplification = 0.2;
+			break;
+		case "tack":
+			amplification = 0;
 			break;
 	}
 
@@ -208,7 +212,6 @@ function getExclusion(canvas, height = 150, width = 300){
 
 function setupCanvas(id){
 	const canvas = l(id);
-	console.log(id);
 	canvas.width = window.innerWidth;
 	canvas.height = CANVAS_HEIGHT;
 	return [canvas, canvas.getContext('2d')];
@@ -217,8 +220,10 @@ function setupCanvas(id){
 function setupRenderer(name, spriteArray, fontSize){
 	const [canvas, ctx] = setupCanvas(`${name}Canvas`);
 	const mouse = { x: 0, y: 0 };
-	const collection = [];
+	let collection = [];
 	const state = { owned: 0 };
+	const yVel = (name === "tack") ? (Math.random() * 10 + 2) : 0;
+	const lineHeightMult = (name === "tack") ? 0.5 : 1;
 
 	canvas.addEventListener("mousemove", e => {
 		const rect = canvas.getBoundingClientRect();
@@ -229,48 +234,69 @@ function setupRenderer(name, spriteArray, fontSize){
 	function update(){
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		//var pos = getValidPosition(canvas, getExclusion(canvas));
+		if(name == "tack"){
+			collection = collection.filter(p => p.homeY < canvas.height + 200);
 
-		updateOwnedLabel();
+			// time += WIGGLE_SPEED;
+			for(const p of collection){
+				p.homeY += Math.random() * yVel + 1;
+				const [x, y, scale] = behaviour(p, mouse, name);
+				drawSprite(name, ctx, p.sprite, x, p.homeY - CANVAS_HEIGHT, scale, FONT_SIZE.tack.base, lineHeightMult);
+			};
+			
+		}else{
 
-		time += WIGGLE_SPEED;
-		for(const entity of collection){
-			const [x, y, scale] = behaviour(entity, mouse, name);
-			drawSprite(ctx, entity.sprite, x, y, scale, fontSize);
+			updateOwnedLabel();
+	
+			time += WIGGLE_SPEED;
+			for(const entity of collection){
+				const [x, y, scale] = behaviour(entity, mouse, name);
+				drawSprite(name, ctx, entity.sprite, x, y, scale, fontSize, lineHeightMult);
+			}
 		}
-
 	}
 
 	function create(amount = 1, animated = false){
 		state.owned += amount;
-		createSprite(spriteArray, canvas, collection, amount, animated);
+		if(collection.length <= MAX_SPRITE_COUNT){
+			createSprite(spriteArray, canvas, collection, amount, animated);
+		}
 	}
 
 	function subtract(amount = 1){
 		state.owned -= amount;
 		collection.splice(-amount);
-
-
 	}
 
 	function updateOwnedLabel(){
-		updateLabel[name + "sOwned"](_owned[name]);
+		try{
+			updateLabel[name + "sOwned"](_owned[name]);
+		}catch(e){
+			// Do nothing. Just here for tacks.
+		}
 	}
 
 	return { canvas, ctx, mouse, collection, state, create, subtract, update, updateOwnedLabel};
 }
 
-function drawSprite(ctx, sprite, x, y, scale, fontSize){
+function drawSprite(name, ctx, sprite, x, y, scale, fontSize, lineHeightMult = 1){
 	const scaledSize = fontSize * scale;
 	ctx.font = `${scaledSize}px monospace`;
 	ctx.textBaseline = "top";
 	ctx.fillStyle = getColor(COLOURS.ascii);
+	let lineHeight = fontSize * lineHeightMult;
+
+	let animated = (name == "printer") ? true : false;
 
 	for (let i = 0; i < sprite.length; i++) {
-        ctx.fillText(sprite[i], x, y + i * fontSize);
+
+		f = Math.floor((frame + 1) % 8);
+		spr = animated ? CHAR_PRINTER[f][i] : sprite[i];
+        ctx.fillText(spr, x, y + i * lineHeight);
     }
 }
 
-function createSprite(sprite, canvas, collection, amount, animated = false, pb = 0, pt = 0, pl = 0, pr = 0){
+function createSprite(sprite, canvas, collection, amount, animated, pb = 0, pt = 0, pl = 0, pr = 0){
 	populateSprite(amount, sprite, canvas, collection, animated, pb, pt, pl, pr);
 }
 
@@ -295,51 +321,51 @@ function populateSprite(count, sprite, canvas, collection, animated, pb = 0, pt 
 
 // #region Tack Render
 
-function createTack(amount = 1) {
-	if(tacks.length >= MAX_SPRITE_COUNT) return;
-	createSprite(CHAR_TACK, tackCanvas, tacks, amount)
-}
+// function createTack(amount = 1) {
+// 	if(tacks.length >= MAX_SPRITE_COUNT) return;
+// 	createSprite(CHAR_TACK, tackCanvas, tacks, amount)
+// }
 
-function populateTack(){
-	populateSprite(tackCount, CHAR_TACK, tackCanvas, tacks);
-}
+// function populateTack(){
+// 	populateSprite(tackCount, CHAR_TACK, tackCanvas, tacks);
+// }
 
-const tackCanvas = l("tackCanvas");
-const tackCtx = tackCanvas.getContext("2d");
-tackCanvas.width = window.innerWidth;
-tackCanvas.height = CANVAS_HEIGHT;
+// const tackCanvas = l("tackCanvas");
+// const tackCtx = tackCanvas.getContext("2d");
+// tackCanvas.width = window.innerWidth;
+// tackCanvas.height = CANVAS_HEIGHT;
 
-const T_BASE_FONT_SIZE = 18;
-const yVelocity = 2;
-let tackCount = 0;
-const tackMouse = { x: 0, y: 0 };
-let tacks = [];
+// const T_BASE_FONT_SIZE = 18;
+// const yVelocity = 2;
+// let tackCount = 0;
+// const tackMouse = { x: 0, y: 0 };
+// let tacks = [];
 
-function drawTack(tackSprite, x, y, scale) {
-	const tackFontSize = T_BASE_FONT_SIZE * scale;
-	const lineHeight = tackFontSize / 2;
+// function drawTack(tackSprite, x, y, scale) {
+// 	const tackFontSize = T_BASE_FONT_SIZE * scale;
+// 	const lineHeight = tackFontSize / 2;
 
-	tackCtx.font = `${tackFontSize}px monospace`;
-	tackCtx.textBaseline = "top";
-	tackCtx.fillStyle = getColor(COLOURS.ascii);
+// 	tackCtx.font = `${tackFontSize}px monospace`;
+// 	tackCtx.textBaseline = "top";
+// 	tackCtx.fillStyle = getColor(COLOURS.ascii);
 
-	for (let i = 0; i < tackSprite.length; i++) {
-		tackCtx.fillText(tackSprite[i], x, y + i * lineHeight);
-	}
-}
+// 	for (let i = 0; i < tackSprite.length; i++) {
+// 		tackCtx.fillText(tackSprite[i], x, y + i * lineHeight);
+// 	}
+// }
 
-function updateTack() {
-	tackCtx.clearRect(0, 0, tackCanvas.width, tackCanvas.height);
-
-	tacks = tacks.filter(p => p.homeY < tackCanvas.height + 200);
-
-	tacks.forEach(p => {
-		p.homeY += Math.random() * yVelocity + 1;
-		const v = wiggle(p, tackMouse, 0);
-		drawTack(p.sprite, v[0], p.homeY - CANVAS_HEIGHT, v[2]);
-	});
+// function updateTack() {
+// 	const yVel = 4;
 	
-	requestAnimationFrame(updateTack);
-}
+// 	tacksRenderer.collection = tacksRenderer.collection.filter(p => p.homeY < tacksRenderer.Canvas.height);
+
+// 	tacksRenderer.collection.forEach(p => {
+// 		p.homeY += Math.random() * yVel + 1;
+// 		const v = behaviour(p, tacksRenderer.mouse, "tack");
+// 		drawSprite(tacksRenderer.ctx, p.sprite, v[0], p.homeY - CANVAS_HEIGHT, v[2], FONT_SIZE.tack.base);
+// 	});
+	
+// 	requestAnimationFrame(updateTack);
+// }
 
 // #endregion
