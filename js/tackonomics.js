@@ -27,8 +27,6 @@ function inflatePrice(asset, amount){
 			COST[asset] *= 1.2;
 			COST[asset] = Math.floor(COST[asset]);
 		}
-		const n = `${asset}Cost`;
-		updateLabel[n](COST[asset]);
 		
 	}else{
 		console.warn(`Property ${asset} doesn't exist.`);
@@ -46,11 +44,9 @@ function catchUpInflation(){
 }
 
 function resetPrices(){
-	
-	for(let a = 0; a < COST.length; a++){
-		COST[a] = DEFAULT_COST[a];
-		updateLabel[COST[a] + "Cost"](COST[a]);	
-	}
+	COST.pointer = DEFAULT_COST.pointer;
+	COST.worker = DEFAULT_COST.worker;
+	COST.printer = DEFAULT_COST.printer;
 }
 
 // #endregion

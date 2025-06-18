@@ -1,6 +1,7 @@
 [
     {
         "version": "0.2.6a",
+        "type": "minor",
         "date": "15-06-2025",
         "additions": [
             "Created the changelog system.",
@@ -17,6 +18,7 @@
     },
     {
         "version": "0.2.5a",
+        "type": "patch",
         "date": "13-06-2025",
         "additions": [
             "Added a favicon.",

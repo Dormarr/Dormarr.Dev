@@ -123,7 +123,7 @@ const WIGGLE_SPEED = 0.01;  // speed of wiggle
 const REPULSION_RADIUS = 450; // smaller radius so repulsion looks nicer
 const REPULSION_FORCE = 2; // how strongly guys get pushed away
 
-const MAX_SPRITE_COUNT = 256;
+const MAX_SPRITE_COUNT = 512;
 
 const FONT_SIZE = {
 	pointer: {base: 8, max: 12},
@@ -196,6 +196,8 @@ function behaviour(g, mouse, name){
 }
 
 function getExclusion(canvas, height = 150, width = 300){
+
+
 	return {
     x: canvas.width / 2 - 175,
     y: canvas.height / 2 - 90,
@@ -216,7 +218,7 @@ function setupRenderer(name, spriteArray, fontSize){
 	const mouse = { x: 0, y: 0 };
 	let collection = [];
 	const state = { owned: 0 };
-	const yVel = (name === "tack") ? 4 : 0;
+	const yVel = (name === "tack") ? 5 : 0;
 	const lineHeightMult = (name === "tack") ? 0.5 : 1;
 
 	canvas.addEventListener("mousemove", e => {
@@ -229,8 +231,8 @@ function setupRenderer(name, spriteArray, fontSize){
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		//var pos = getValidPosition(canvas, getExclusion(canvas));
 		if(name == "tack"){
-			collection = collection.filter(p => p.homeY < canvas.height + 200);
-
+			collection = collection.filter(p => p.homeY < canvas.height + CANVAS_HEIGHT);
+			
 			// time += WIGGLE_SPEED;
 			for(const p of collection){
 				p.homeY += yVel + (Math.random() * 4);
@@ -253,7 +255,7 @@ function setupRenderer(name, spriteArray, fontSize){
 	function create(amount = 1, animated = false){
 		state.owned += amount;
 		if(collection.length <= MAX_SPRITE_COUNT){
-			createSprite(spriteArray, canvas, collection, amount, animated);
+			createSprite(name, spriteArray, canvas, collection, amount, animated);
 		}
 	}
 
@@ -290,12 +292,13 @@ function drawSprite(name, ctx, sprite, x, y, scale, fontSize, lineHeightMult = 1
     }
 }
 
-function createSprite(sprite, canvas, collection, amount, animated, pb = 0, pt = 0, pl = 0, pr = 0){
-	populateSprite(amount, sprite, canvas, collection, animated, pb, pt, pl, pr);
+function createSprite(name, sprite, canvas, collection, amount, animated, pb = 0, pt = 0, pl = 0, pr = 0){
+	populateSprite(name, amount, sprite, canvas, collection, animated, pb, pt, pl, pr);
 }
 
-function populateSprite(count, sprite, canvas, collection, animated, pb = 0, pt = 0, pl = 0, pr = 0){
-	const exclusion = getExclusion(canvas);
+function populateSprite(name, count, sprite, canvas, collection, animated, pb = 0, pt = 0, pl = 0, pr = 0){
+	const exclusion = (name === "tack") ? 0 : getExclusion(canvas);
+
 	count = Math.min(count, MAX_SPRITE_COUNT);	
 
 	// I need to find a way to move this to a sort of universal draw function.

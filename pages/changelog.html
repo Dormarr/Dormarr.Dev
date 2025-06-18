@@ -35,6 +35,11 @@
 		#output {
 			height: 300px;
 		}
+		select{
+			width: 100%;
+			margin-top: 8px;
+			padding: 8px;
+		}
 	</style>
 </head>
 <body>
@@ -48,6 +53,13 @@
 
 	<label>Version:</label>
 	<input type="text" id="version" placeholder="e.g. 0.2.7a">
+
+	<label>Type:</label>
+	 <select id="type">
+		<option value="patch">Patch</option>
+		<option value="minor">Minor</option>
+		<option value="major">Major</option>
+	 </select>
 
 	<label>Date:</label>
 	<input type="text" id="date" placeholder="e.g. 16-06-2025">
@@ -67,68 +79,71 @@
 	<h3>📄 Preview Updated JSON:</h3>
 	<textarea id="output" readonly></textarea>
 
-	<script>
-		let changelog = [];
-
-		function parseLines(id) {
-			return document.getElementById(id).value
-				.split('\n')
-				.map(line => line.trim())
-				.filter(line => line !== '');
-		}
-
-		function addChangelogEntry() {
-			const version = document.getElementById('version').value.trim();
-			const date = document.getElementById('date').value.trim();
-
-			if (!version || !date) {
-				alert("Version and date are required.");
-				return;
-			}
-
-			const newEntry = {
-				version: version,
-				date: date,
-				additions: parseLines('additions'),
-				fixes: parseLines('fixes'),
-				notes: parseLines('notes')
-			};
-
-			changelog.unshift(newEntry);
-			updateOutput();
-		}
-
-		function updateOutput() {
-			document.getElementById('output').value = JSON.stringify(changelog, null, 4);
-		}
-
-		function loadFile(event) {
-			const file = event.target.files[0];
-			if (!file) return;
-
-			const reader = new FileReader();
-			reader.onload = function(e) {
-				try {
-					changelog = JSON.parse(e.target.result);
-					updateOutput();
-					alert("✅ Changelog loaded!");
-				} catch (err) {
-					alert("❌ Invalid JSON file.");
-				}
-			};
-			reader.readAsText(file);
-		}
-
-		function downloadChangelog() {
-			const blob = new Blob([JSON.stringify(changelog, null, 4)], { type: 'application/json' });
-			const url = URL.createObjectURL(blob);
-			const a = document.createElement('a');
-			a.href = url;
-			a.download = 'changelog.json';
-			a.click();
-			URL.revokeObjectURL(url);
-		}
-	</script>
 
 </body>
+<script src="../js/utils.js"></script>
+<script>
+	let changelog = [];
+
+	function parseLines(id) {
+		return l(id).value
+			.split('\n')
+			.map(line => line.trim())
+			.filter(line => line !== '');
+	}
+
+	function addChangelogEntry() {
+		const version = l('version').value.trim();
+		const type = l('type').value;
+		const date = l('date').value.trim();
+
+		if (!version || !date) {
+			alert("Version and date are required.");
+			return;
+		}
+
+		const newEntry = {
+			version: version,
+			type: type,
+			date: date,
+			additions: parseLines('additions'),
+			fixes: parseLines('fixes'),
+			notes: parseLines('notes')
+		};
+
+		changelog.unshift(newEntry);
+		updateOutput();
+	}
+
+	function updateOutput() {
+		l('output').value = JSON.stringify(changelog, null, 4);
+	}
+
+	function loadFile(event) {
+		const file = event.target.files[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = function(e) {
+			try {
+				changelog = JSON.parse(e.target.result);
+				updateOutput();
+				alert("✅ Changelog loaded!");
+			} catch (err) {
+				alert("❌ Invalid JSON file.");
+			}
+		};
+		reader.readAsText(file);
+	}
+
+	function downloadChangelog() {
+		const blob = new Blob([JSON.stringify(changelog, null, 4)], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'changelog.json';
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+</script>
 </html>

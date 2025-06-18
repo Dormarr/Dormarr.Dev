@@ -183,7 +183,6 @@
 - Tool tips and dynamic HTML - Make more persistent templates
 ✓ Add a changelog overlay window (scrollable) with all the update info going forward. Add to InnerHTML from external doc.
 - Ensure backwards support.
-✓ Start dividing up the files maybe. This is getting ridiculous
 - Fix printer positioning - adjust exclusion zone code to allow for padding.
 ✓ Sort out string storage 	i.e: preferences.theme?'1':'0'; etc.
 - Finalise progression ideas
@@ -215,13 +214,15 @@ Have 2 main threads, corrupt and honest.
 Honest leans more towards socialism and utopian views on labour.
 Corrupt goes full capitalist hellscape. Power abuses and the like.
 
+Tack coin: Rename yourself? Dynamically name.
+Invent a cryptocurrency to produce tacks and give access to stock market.
+
 Track corruption level and have random events happen as you progress.
 Make sure to make the honest line be eventful too though.
 
 An interactable ASCII research tree. Yes please.
 I need to nail tooltips and alt windows and stuff first though.
 
-Achievements would also be cool. Need to consider the impact on SaveData though.
 
 WORKS ON CANVAS
 ─│┌┐└┘├┤┬┴┼═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬▀▄█▌▐■▬▲►▼◄◦☺☻●░▒▓₸
@@ -249,7 +250,7 @@ Date: Formatted as 'YY.MM'.
 const MAJOR = "0";
 const MINOR = "2";
 const BUILD = "7a";
-const REVISION = ""; //add decimal if using.
+const REVISION = ".02"; //add decimal if using.
 
 const VERSION_DATE = getVersionDate();
 const VERSION = getVersion();
@@ -387,7 +388,7 @@ const workers = setupRenderer("worker", CHAR_WORKER, FONT_SIZE.worker.base);
 const printers = setupRenderer("printer", CHAR_PRINTER, FONT_SIZE.printer.base);
 const tacksRenderer = setupRenderer("tack", CHAR_TACK, FONT_SIZE.tack.base);
 
-function bootstrap(){
+async function bootstrap(){
 	loadGame();
 	createAssetSlices();
 	initialiseEventListeners();
@@ -470,7 +471,8 @@ async function openChangelog(){
 	changelog.forEach(entry => {
 		const section = document.createElement('div');
 		section.innerHTML += `
-			<h2>Version ${entry.version} - ${entry.date}</h2>
+			<h2>${entry.type}</h2>
+			<h4>Version ${entry.version} - ${entry.date}</h4>
 			<h3>Additions</h3>
 			<ul>
 				${entry.additions.map(change => `<li>${change}</li>`).join('')}
@@ -672,6 +674,8 @@ function refreshDisplay(){
 	_totalTacksEarned += _tacksPerSecond / FPS
 	updateLabels();
 
+	create("tack", _tacksPerSecond / FPS);
+
 	requestAnimationFrame(pointers.update);
 	requestAnimationFrame(workers.update);
 	requestAnimationFrame(printers.update);
@@ -690,11 +694,15 @@ function updateLabels(){
 	updateLabel["totalClicks"](`Total clicks: ${_clicks}`);
 	updateLabel["achievementsEarned"](`Achievements unlocked: ${_achievementsEarned} / ${totalAchievementsCount}`);
 
+	updateLabel["pointerCost"](COST.pointer);
+	updateLabel["workerCost"](COST.worker);
+	updateLabel["printerCost"](COST.printer);
+
 }
 
 // Called per second
 function secondDisplay(){
-	create("tack", _tacksPerSecond);
+	// create("tack", _tacksPerSecond);
 	updateLabel["title"](`${Math.floor(_tacks)} Tacks!`);
 	
 	//Move to initialisation
