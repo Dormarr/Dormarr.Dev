@@ -513,7 +513,7 @@ function openAchievements(){
 
 	for(i = 0; i < milestones.length; i++){
 		var m = milestones[i];
-		var a = achievementsUnlocked[m.id] ? `<span style="color: green; font-weight: bold;">Yepp</span>` : `<span style="color: red; font-weight: bold;">Nope</span>`;
+		var a = achievementsUnlocked[m.id] ? `<span style="color: ${getColor(COLOURS.green)}; font-weight: bold;">Yepp</span>` : `<span style="color: ${getColor(COLOURS.red)}; font-weight: bold;">Nope</span>`;
 		const section = document.createElement('div');
 		section.innerHTML += `
 		<h3 style="margin: 0px;">${m.label}</h3>
@@ -676,10 +676,10 @@ function refreshDisplay(){
 
 	create("tack", _tacksPerSecond / FPS);
 
+	requestAnimationFrame(tacksRenderer.update);
 	requestAnimationFrame(pointers.update);
 	requestAnimationFrame(workers.update);
 	requestAnimationFrame(printers.update);
-	requestAnimationFrame(tacksRenderer.update);
 	
 }//buffalo
 

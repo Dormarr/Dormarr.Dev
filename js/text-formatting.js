@@ -145,7 +145,7 @@ function getNewTicker(){
 	]));}
 
 	if(_totalTacksEarned > 1000000 & Math.random() < 0.1){ list.push(choose([
-		`<p class="ticket">That's a lot of tacks bro.o</p>`
+		`<p class="ticket">That's a lot of tacks bro.</p>`
 	]));}
 
 	
