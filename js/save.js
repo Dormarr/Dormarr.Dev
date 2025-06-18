@@ -99,7 +99,7 @@ async function loadGame(newGame) {
 		_playedTimeElapsed = 0;
 		_clicks = 0;
 		DATA.version = getVersion();
-		await getAchievementArray();
+		// await getAchievementArray();
 		_achievementsEarned = 0;
 		
 		DATA.theme = _lastKnownTheme || THEME.LIGHT; // Is there a way to get this to be system default?
@@ -132,7 +132,7 @@ async function loadGame(newGame) {
 		DATA.version = parsed.version || getVersion();
 		_lastKnownTheme = parsed.theme || THEME.LIGHT;
 		_totalTacksEarned = parsed.totalTacksEarned || 0;
-		_achievements = parsed.achievements || await getAchievementArray();
+		_achievements = parsed.achievements || [];
 		_achievementsEarned = parsed.achievementsEarned || 0;
 		await saveIntoData();
 		onRefresh();
@@ -143,7 +143,6 @@ async function loadGame(newGame) {
 	
 	await loadAchievements();
 	
-	catchUpInflation();
 	updateLabel["pointerCost"](COST.pointer);
 	updateLabel["workerCost"](COST.worker);
 	updateLabel["printerCost"](COST.printer);

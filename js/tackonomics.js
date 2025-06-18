@@ -8,7 +8,7 @@ function buy(type, amount = 1, cheat = false){
 	let price = cheat? 0 : getPrice(type);
 	if(canAfford(price)){
 		subtractTacks(price);
-		inflatePrice(type);
+		inflatePrice(type, amount);
 		create(type, amount);
 		_owned[type] += amount;
 		printNotification("Bought: " + amount + "x " + type, COLOURS.text, 2000);
@@ -20,11 +20,15 @@ function buy(type, amount = 1, cheat = false){
 	}
 }
 
-function inflatePrice(asset){
+function inflatePrice(asset, amount){
 	if(COST.hasOwnProperty(asset)){
-		COST[asset] *= 1.2;
-		COST[asset] = Math.floor(COST[asset]);
-		updateLabel[asset + "Cost"](COST[asset]);
+		
+		for(let i = 0; i < amount; i++){
+			COST[asset] *= 1.2;
+			COST[asset] = Math.floor(COST[asset]);
+		}
+		const n = `${asset}Cost`;
+		updateLabel[n](COST[asset]);
 		
 	}else{
 		console.warn(`Property ${asset} doesn't exist.`);
@@ -34,11 +38,10 @@ function inflatePrice(asset){
 function catchUpInflation(){
 	
 	for(const asset in COST){
-		const rounds = DATA[asset + "sOwned"];
-		for(i = 0; i < rounds; i++){
-			inflatePrice(asset);
-		}	
-		//console.log(`Inflated ${asset} ${rounds} times.`);
+		const rounds = _owned[asset];
+		inflatePrice(asset, rounds);
+		// console.log(`Inflated ${asset} ${rounds} times.`);
+		// updateLabel[asset + "Cost"](COST[asset]);
 	}
 }
 

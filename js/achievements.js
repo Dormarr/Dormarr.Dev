@@ -17,7 +17,7 @@ const achievementsUnlocked = {
 
 let milestones = [];
 
-setInterval(getAchievementArray, 2500);
+// setInterval(getAchievementArray, 2500);
 
 // Reorder milestones to be in order of achievement (on average).
 // When it displays in order, I want it to make chronological sense.
@@ -62,9 +62,9 @@ async function getAchievementArray(){
 		let num = value ? 1 : 0;
 		ar.push(num);
 	}
-	// console.log(`Achievement Array: ${ar}.`);
 	_achievementsEarned = ar.reduce((p, a) => p + a, 0);
-
+	DATA.achievements = ar;
+	console.log(`Achievement Array: ${ar}.`);
 	return ar;
 }
 

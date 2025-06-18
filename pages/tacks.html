@@ -32,7 +32,7 @@
 		<div style="display: flex; flex-direction: column; align-items: center; width: 100%">
 			<div class="widget buy">
 				<h1 class="title">Tacks</h1>
-				<p style="color: var(--black); margin-top: 0px;">A Lesser Paperclips</p>
+				<p style="color: var(--black); margin-top: 0px;">In perpetual development</p>
 				<br>
 				<p class="tps" style="text-align:center" id="tpsLbl">Click to increment.</p>
 				<label id="tacksLbl">0</label>
@@ -297,7 +297,7 @@ const DATA = {
 	dropshippersOwned: 0,
 	playedTime: 0,
 	theme: _lastKnownTheme || THEME.LIGHT,
-	achievements: 0,
+	achievements: [],
 	achievementsEarned: 0,
 
 }
@@ -373,7 +373,7 @@ const updateLabel = {
 	pointerCost: (val) => { l("pointerCostLbl").textContent = val; },
 	workerCost: (val) => { l("workerCostLbl").textContent = val; },
 	printerCost: (val) => { l("printerCostLbl").textContent = val; },
-	dropshipperCost: (val) => { l("dropshipperCostLbl").textContent = val; },
+	// dropshipperCost: (val) => { l("dropshipperCostLbl").textContent = val; },
 
 	tacksEarned: (val) => { l("tacksEarnedLbl").textContent = val; },
 	totalClicks: (val) => { l("totalClicksLbl").textContent = val; },
@@ -419,7 +419,6 @@ function initialiseEventListeners(){
 
 function dummyClick(){
 	// openUpdate();
-	console.log("THIS GUY " + COST[1]);
 	cheat();
 }
 
@@ -444,8 +443,8 @@ function openUpdate(){
 		<div class="widget overlay" style="min-width: 400px; border: 2px solid var(--feature)">
 			<h2>UPDATE</h2>
 			<div style="display: flex; flex-direction: column;">
-				<label class="small">More achievements.</label>
-				<label class="small">Monitor progress from stats tab.</label>
+				<label class="small">Achievements tweaks.</label>
+				<label class="small">Lots of broken things but I'll get to it.</label>
 				<br>
 				<button id="closeUpdate">Close</button>
 			</div>
@@ -566,6 +565,7 @@ async function createAssetSlices(){
 
 async function onRefresh(){
 	forceUpdateTheme();
+	catchUpInflation();
 	await repopulate();
 }
 
@@ -767,7 +767,7 @@ window.addEventListener("resize", debounce(resizeWindow, 150));
 function resizeWindow(){
 	resizeCanvas(workerCanvas, workers);
 	resizeCanvas(pointerCanvas, pointers);
-	resizeCanvas(tackCanvas, tacks);
+	resizeCanvas(tackCanvas, tacksRenderer);
 	resizeCanvas(printerCanvas, printers);
 }
 
