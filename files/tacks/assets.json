@@ -4,20 +4,31 @@
         "Name": "Pointer",
         "Cost": 25,
         "Type": "Click",
-        "Produce": 0.25 
+        "Produce": 0.25,
+        "Meta": "An extra finger to produce Tacks."
+    },
+    {
+        "ID": "scavenger",
+        "Name": "Scavenger",
+        "Cost": 100,
+        "Type": "Second",
+        "Produce": 0.4,
+        "Meta": "Hired help to scavenge the streets for abandoned tacks."
     },
     {
         "ID": "worker",
         "Name": "Worker",
         "Cost": 100,
         "Type": "Second",
-        "Produce": 0.4
+        "Produce": 0.4,
+        "Meta": "Unskilled labour to keep the factories manned."
     },
     {
         "ID": "printer",
         "Name": "Printer",
         "Cost": 400,
         "Type": "Second",
-        "Produce": 1
+        "Produce": 1,
+        "Meta": "Create tacks from your bedroom."
     }
 ]

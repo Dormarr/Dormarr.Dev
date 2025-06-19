@@ -178,6 +178,7 @@
 ✓ Redo purchase slices to be generated in code. TEST IN HOME ENVIRONMENT
 ✓ Add achievements window
 ✓ Tweaked achievement calculations code
+- Implement asset meta tooltip on buy button hover
 - Release Dropshipper
 - Implement upgrades
 - Tool tips and dynamic HTML - Make more persistent templates
@@ -186,16 +187,21 @@
 - Fix printer positioning - adjust exclusion zone code to allow for padding.
 ✓ Sort out string storage 	i.e: preferences.theme?'1':'0'; etc.
 - Finalise progression ideas
+- Detailed breakdown of TPS per asset as tooltip on hover.
 
 == Tackonomics ==
-A rework of the Tack in/out system. Already well overdue I reckon.
-Needs to work nicely with centralised data fields.
-Ensure it scales so laggable scale of ownership isn't attainable.
+I've sort of just ballparked the inflation. Do some research and play with values.
+The open market needs to exist too. I want a fluctuating market based on semi-realistic
+	simulations of stocks.
+Also do I just use the tacks as the money? Or do I implement a separate money system?
+Strategic investments could work nicely alongside Politacks.
 
 == Politacks ==
 Worm your way into politics by buying off government officials, lobbying for bills, and funding wars abroad.
 Basically becomes a whole other game akin to like, risk.
 An ASCII board room could be really cool. Like a separate screen entirely.
+Lobbyist could be its own asset, speeding up the progress of bills.
+You need more negatives though. Politacks is rich with opportunity there, but otherwise idk.
 
 == Progression ==
 Finger 		Increase per click
@@ -208,6 +214,20 @@ R&D Upgrade		Branches off to researching new methods of production - A research/
 Board Room Upgrade	Opens up a whole coruption line of stuff
 
 Beyond this it could go anywhere.
+
+== Negatives/Obstacles ==
+I need more things to get in the way of progress, things to overcome.
+Various challenges that maintain engagement and amplify enjoyment.
+These should be consequences and reactions to the players actions.
+
+Workers Strike: Workers stop working if you abuse the working hours and pay too much?
+Scavenger: Split your profits. If you set too low, they might start stealing from you.
+
+Present an option as to how to deal with it. Make a promise or retaliate.
+For example, promise to increase worker wages. If unfulfilled in x amount of time, strikes get more intense (or other consequence).
+How will you handle this kind of data though? It can scale very quickly and I want to keep it minimal.
+Maybe if I have a binary events system then I can save into binary strings?
+Redo the achievements string system to work more widely with boolean values in general.
 
 == Skill/Research Tree ==
 Have 2 main threads, corrupt and honest.
@@ -225,7 +245,17 @@ I need to nail tooltips and alt windows and stuff first though.
 
 
 WORKS ON CANVAS
-─│┌┐└┘├┤┬┴┼═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬▀▄█▌▐■▬▲►▼◄◦☺☻●░▒▓₸
+─│┌┐└┘├┤┬┴┼═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬▀▄█▌▐■▬▲►▼◄◦☺☻●░▒▓₸ θϴԚ
+
+Scavenger: Dead variant. 
+ x
+/#\
+/ \
+
+Worker: Head changes number depending on dissatisfaction.
+ 4
+/£\
+/ \
 
 Dropshipper - Box opening?
 ╔══╗
@@ -608,20 +638,20 @@ function addTack(amount){
 	create("tack", amount);
 }
 
-function addToLabel(name, amount) {
-	const label = l(name + "Lbl");
+// function addToLabel(name, amount) {
+// 	const label = l(name + "Lbl");
 
-	if (!label) {
-		console.warn(`Label element not found: ${name}Lbl`);
-		return;
-	}
+// 	if (!label) {
+// 		console.warn(`Label element not found: ${name}Lbl`);
+// 		return;
+// 	}
 
-	let currentVal = parseFloat(label.textContent);
-	if (isNaN(currentVal)) currentVal = 0;
+// 	let currentVal = parseFloat(label.textContent);
+// 	if (isNaN(currentVal)) currentVal = 0;
 
-	const newVal = currentVal + amount;
-	label.textContent = Math.floor(newVal);
-}
+// 	const newVal = currentVal + amount;
+// 	label.textContent = Math.floor(newVal);
+// }
 
 function subtractTacks(amount){ _tacks -= amount; }
 
@@ -697,7 +727,6 @@ function updateLabels(){
 	updateLabel["pointerCost"](COST.pointer);
 	updateLabel["workerCost"](COST.worker);
 	updateLabel["printerCost"](COST.printer);
-
 }
 
 // Called per second

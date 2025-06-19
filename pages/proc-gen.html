@@ -1,10 +1,78 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link href="style.css" rel="stylesheet">
+    <link href="../style.css" rel="stylesheet">
     <title id="tabTitlePG">Procedural Generation</title>
 </head>
 <body>
-    <h1>Procedural Generation</h1>
+    <div style="display: flex; flex-direction: column; width: 100%; justify-content: center; align-items: center;">
+        <h2 style="text-align: center;">Procedural Generation</h2>
+        <canvas id="proceduralCanvas" style="width: 512px; height: 512px; background-color: aliceblue;"></canvas>
+        <button onClick="drawPerlin()">Redraw</button>
+    </div>
 </body>
 </html>
+<script src="../js/utils.js"></script>
+<script src="../js/canvasUtils.js"></script>
+<script src="../js/perlin.js"></script>
+<script>
+
+const gridCount = 64;
+const canvas = l("proceduralCanvas");
+const ctx = canvas.getContext("2d");
+const canvasWidth = parseFloat(getComputedStyle(canvas).width);
+const squareSize = getCanvasGridSquareSize(canvas, canvasWidth, gridCount);
+
+const colours3 = [
+    'rgb(20,20,20)',
+    'rgb(220,220,220)',
+]
+
+const colours2 = [
+    'rgb(20,20,20)',
+    'rgb(60,60,60)',
+    'rgb(100,100,100)',
+    'rgb(140,140,140)',
+    'rgb(180,180,180)',
+    'rgb(220,220,220)',
+]
+
+const colours = [
+    'rgb(1,1,1)',
+    'rgb(20,20,20)',
+    'rgb(40,40,40)',
+    'rgb(60,60,60)',
+    'rgb(80,80,80)',
+    'rgb(100,100,100)',
+    'rgb(120,120,120)',
+    'rgb(140,140,140)',
+    'rgb(160,160,160)',
+    'rgb(180,180,180)',
+    'rgb(200,200,200)',
+    'rgb(220,220,220)',
+    'rgb(240,240,240)',
+]
+
+function drawPerlin(){
+    let scale = 0.05;
+    let seed = Math.random() * 255;
+    for(let y = 0; y < gridCount; y++){
+        for(let x = 0; x < gridCount; x++){
+            const value = octavePerlin(x * scale, y * scale, seed * scale, 1, 1);
+            output  = mapValueToRange(value, colours2);
+            mark(ctx, x, y, output, squareSize);
+        }
+    }
+    console.log("Drawn Perlin");
+}
+
+function mapValueToRange(val, rng){
+    const normalised = (val + 1) / 2;
+    const index = Math.floor(normalised * (rng.length - 1));
+    return rng[index];
+}
+
+drawPerlin();
+// drawCheckerboard(canvas, canvasWidth, 32);
+
+</script>

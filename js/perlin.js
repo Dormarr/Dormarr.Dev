@@ -8,7 +8,7 @@ for (let i = 255; i > 0; i--) {
 for (let i = 0; i < 256; i++) perm[i + 256] = perm[i];
 
 function fade(t) {
-  return t * t * t * (t * (t * 6 - 15) + 10);
+  return t * t * t * (t * (t * 6 - 15) + 5);
 }
 
 function lerp(a, b, t) {
@@ -51,6 +51,24 @@ function perlin(x, y, z) {
            grad(perm[BB + 1], x - 1, y - 1, z - 1), u), v),
     w
   );
+}
+
+function octavePerlin(x, y, z, octaves, persistence){
+  let total = 0;
+  let frequency = 1;
+  let amplitude = 1;
+  let maxVal = 0; // for normalisation
+
+  for(let i = 0; i < octaves; i++){
+    total += perlin(x * frequency, y * frequency, z * frequency) * amplitude;
+
+    maxVal += amplitude;
+    amplitude *= persistence;
+    frequency *= 1;
+  }
+
+
+  return total/maxVal;
 }
 
 const chars = "    ..:oO0@ ";

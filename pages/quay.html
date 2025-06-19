@@ -16,7 +16,7 @@
         <h1>Quay</h1>
     </div>
     <div class="slice" style="align-items: center; flex-direction: column; gap: 8px;">
-            <canvas id="quayCanvas" style="margin: 32px"></canvas>
+            <canvas id="quayCanvas"></canvas>
             <label id="debug1">Test</label>
             <label id="debug2">Test 2</label>
             <input id="toEncode">
@@ -47,7 +47,6 @@ function recalculateCanvas(){
     squareSize = 450 / gridSize;
     canvas.width = gridSize * squareSize;
     canvas.height = gridSize * squareSize;
-
 }
 
 async function generateCode(){

@@ -18,7 +18,7 @@
 }
 body{
     background-color: var(--eerie-black);
-    color: var(--champagne-pink);
+    color: var(--cosmic-latte);
     font-family: monospace;
     margin: 0px;
     max-width: 100%;
@@ -75,6 +75,9 @@ a:hover{
 p{
     font-size: 16px;
     width: fit-content;
+}
+canvas{
+    margin: 32px;
 }
 label{
     max-width: 100%;

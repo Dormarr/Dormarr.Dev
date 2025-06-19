@@ -132,6 +132,7 @@ function getNewTicker(){
 		`<q>We are but fleeting notes, pinned briefly in the corkboard of time.</q><sig>  -Marcus Aurelius</sig>`,
 		`<q>Freedom is the space between the pins.</q><sig>  -Camus</sig>`,
 		`<q>Buffalo</q><sig>  -CMH</sig>`,
+		`<p>The system doesn't work.</p>`,
 	]));
 	
 	if(_owned.printer > 10 & Math.random() < 0.1){ list.push(choose([
