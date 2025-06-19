@@ -8,6 +8,8 @@
     <div style="display: flex; flex-direction: column; width: 100%; justify-content: center; align-items: center;">
         <h2 style="text-align: center;">Procedural Generation</h2>
         <canvas id="proceduralCanvas" style="width: 512px; height: 512px; background-color: aliceblue;"></canvas>
+        <img id="colourMap" src="../images/colourMap.png" style="display: none; width:8px; height: 8px;">
+        <canvas id="colourCanvas"></canvas>
         <button onClick="drawPerlin()">Redraw</button>
     </div>
 </body>
@@ -23,19 +25,12 @@ const ctx = canvas.getContext("2d");
 const canvasWidth = parseFloat(getComputedStyle(canvas).width);
 const squareSize = getCanvasGridSquareSize(canvas, canvasWidth, gridCount);
 
-const colours3 = [
-    'rgb(20,20,20)',
-    'rgb(220,220,220)',
-]
+const colourMapCanvas = l("colourCanvas");
+const img = l("colourMap");
+const ctx_cm = colourMapCanvas.getContext("2d", { willReadFrequently: true });
 
-const colours2 = [
-    'rgb(20,20,20)',
-    'rgb(60,60,60)',
-    'rgb(100,100,100)',
-    'rgb(140,140,140)',
-    'rgb(180,180,180)',
-    'rgb(220,220,220)',
-]
+let tempMap = [];
+let precMap = [];
 
 const colours = [
     'rgb(1,1,1)',
@@ -53,17 +48,119 @@ const colours = [
     'rgb(240,240,240)',
 ]
 
+function loadCanvas(){
+    colourMapCanvas.width = img.width;
+    colourMapCanvas.height = img.height;
+
+    ctx_cm.drawImage(img, 0, 0);
+}
+
+loadCanvas();
+
 function drawPerlin(){
-    let scale = 0.05;
-    let seed = Math.random() * 255;
+    let scale = 0.1;
+    let seed = Math.floor((Math.random()) * 255);
     for(let y = 0; y < gridCount; y++){
+        tempMap[y] = [];
+        precMap[y] = [];
         for(let x = 0; x < gridCount; x++){
-            const value = octavePerlin(x * scale, y * scale, seed * scale, 1, 1);
-            output  = mapValueToRange(value, colours2);
-            mark(ctx, x, y, output, squareSize);
+            // const value = octavePerlin(x * scale, y * scale, seed * scale, 1, 1);
+            const temperature = octavePerlin(x * scale, y * scale, seed * scale, 1, 1);
+            const precipitation = octavePerlin(x * scale, y * scale, seed * scale, 1, 1);
+
+            tempMap[y][x] = temperature;
+            precMap[y][x] = precipitation;
+            
+            drawTileFromUV(x, y, tempMap, precMap);
+            // output  = mapValueToRange(value, colours);
+            // mark(ctx, x, y, output, squareSize);
         }
     }
     console.log("Drawn Perlin");
+}
+
+function drawTileFromUV(x, y, tempMap, precMap) {
+    const tileSize = squareSize;
+    const subSize = tileSize / 8;
+
+    // Collect surrounding tile data (3x3 grid)
+    const grid = [];
+    for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+            grid.push(getDataSafe(tempMap, precMap, x + dx, y + dy));
+        }
+    }
+
+    for (let i = 0; i < UV_COORDS.length; i++) {
+        const uvSet = UV_COORDS[i];
+        uvSet.forEach(([ux, uy]) => {
+            // Normalise UV to 0–1 within the 8×8 tile
+            const fx = ux / 7;
+            const fy = uy / 7;
+
+            // Interpolate between 4 corners for smooth gradient
+            const tl = grid[0]; // top-left
+            const tr = grid[2]; // top-right
+            const bl = grid[6]; // bottom-left
+            const br = grid[8]; // bottom-right
+
+            const interpTemp = bilerp(tl.temp, tr.temp, bl.temp, br.temp, fx, fy);
+            const interpPrec = bilerp(tl.prec, tr.prec, bl.prec, br.prec, fx, fy);
+
+            const col = getColour(interpTemp, interpPrec);
+            ctx.fillStyle = `rgb(${col.r},${col.g},${col.b})`;
+
+            // Draw subpixel
+            ctx.fillRect(
+                x * tileSize + ux * subSize,
+                y * tileSize + uy * subSize,
+                subSize,
+                subSize
+            );
+        });
+    }
+}
+
+
+function bilerp(tl, tr, bl, br, x, y) {
+    const top = tl + (tr - tl) * x;
+    const bottom = bl + (br - bl) * x;
+    return top + (bottom - top) * y;
+}
+
+function getDataSafe(tempMap, precMap, x, y) {
+    const gx = Math.max(0, Math.min(gridCount - 1, x));
+    const gy = Math.max(0, Math.min(gridCount - 1, y));
+    return {
+        temp: tempMap[gy][gx],
+        prec: precMap[gy][gx]
+    };
+}
+
+function createTile(temperature, precipitation, x, y){
+    // use normalised values to read colourmap.
+    const c = getColour(temperature, precipitation);
+    const colour = `rgb(${c.r},${c.g},${c.b})`
+
+
+    mark(ctx, x, y, colour, squareSize);
+}
+
+function getColour(normX, normY){
+
+    normX = Math.min(Math.max(normX, 0), 1);
+    normY = Math.min(Math.max(normY, 0), 1);
+
+    const x = Math.floor(normX * img.width);
+    const y = Math.floor(normY * img.height);
+
+    const pixel = ctx_cm.getImageData(x, y, 1, 1).data;
+
+    return {
+        r: pixel[0],
+        g: pixel[1],
+        b: pixel[2]
+    };
 }
 
 function mapValueToRange(val, rng){
@@ -74,5 +171,24 @@ function mapValueToRange(val, rng){
 
 drawPerlin();
 // drawCheckerboard(canvas, canvasWidth, 32);
+
+const UV_COORDS = [
+    [(0,0),(1,0),(0,1)],
+    [(2,0),(2,1),(3,1),(3,2)],
+    [(3,0),(4,0),(4,1),(5,1),(5,2)],
+    [(5,0),(6,0),(7,0),(7,1)],
+    [(1,1),(0,2),(1,2),(0,3),(0,4)],
+    [(2,2),(1,3),(2,3),(2,4)],
+    [(4,2),(3,3),(4,3),(5,3)],
+    [(6,1),(6,2),(7,2),(7,3)],
+    [(1,4),(0,5),(1,5),(1,6)],
+    [(3,4),(2,5),(3,5),(2,6)],
+    [(4,4),(4,5),(5,5)],
+    [(6,3),(5,4),(6,4),(7,4),(6,5),(7,5)],
+    [(0,6),(0,7),(1,7)],
+    [(3,6),(2,7),(3,7)],
+    [(4,6),(5,6),(6,6),(4,7)],
+    [(7,6),(5,7),(6,7),(7,7)]
+]
 
 </script>
