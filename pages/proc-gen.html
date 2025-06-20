@@ -11,6 +11,7 @@
         <img id="colourMap" src="../images/colourMap.png" style="display: none; width:8px; height: 8px;">
         <canvas id="colourCanvas" style="display: none;"></canvas>
         <button onClick="drawPerlin()">Redraw</button>
+        <br>
         <div style="display: flex; flex-direction: row; gap: 24px;">
             <div>
                 <h3>Temperature</h3>
@@ -69,6 +70,21 @@
                 </div>
             </div>
         </div>
+        <div style="width: 90%; height: 2px; background-color: white; margin: 32px;"></div>
+        <h3>Dynamic Tiles (WIP)</h3>
+        <div style="display: flex; flex-direction: row;">
+            <canvas id="tileCanvas" style="width: 256px; height: 256px; background-color: blue;"></canvas>
+            <p style="max-width: 200px; word-wrap: normal;">These are entirely code generated.
+                Using overlapping perlin maps to determine temperature and precipitation, it pulls a colour
+                from a carefully constructed biome colour map, and assigns colour similarly to UV textures.
+            </p>
+        </div>
+        <div>
+            <label>Tile Count</label>
+            <input id="tileCountSlider" type="range" min="0" max="20" value="2" step="1" onInput="updateValue(this.value, 11)">
+            <label id="tileCountValue">2</label>
+        </div>
+        <div style="height: 800px;"></div>
     </div>
 </body>
 </html>
@@ -80,13 +96,19 @@
 
 const gridCount = 64;
 const canvas = l("proceduralCanvas");
-const ctx = canvas.getContext("2d");
-const canvasWidth = parseFloat(getComputedStyle(canvas).width);
+const ctx_pg = canvas.getContext("2d");
+const canvasWidth = getCanvasWidth(canvas);
 const squareSize = getCanvasGridSquareSize(canvas, canvasWidth, gridCount);
 
 const colourMapCanvas = l("colourCanvas");
 const img = l("colourMap");
 const ctx_cm = colourMapCanvas.getContext("2d", { willReadFrequently: true });
+
+let tileGridCount = 2;
+const tileCanvas = l("tileCanvas");
+const ctx_tc = tileCanvas.getContext('2d');
+const tileCanvasWidth = getCanvasWidth(tileCanvas);
+const tileSquareSize = getCanvasGridSquareSize(tileCanvas, tileCanvasWidth, tileGridCount);
 
 const sliderSValue = l("sliderSLabel");
 const sliderFValue = l("sliderFLabel");
@@ -99,6 +121,8 @@ const sliderF2Value = l("sliderF2Label");
 const sliderO2Value = l("sliderO2Label");
 const sliderP2Value = l("sliderP2Label");
 const sliderA2Value = l("sliderA2Label");
+
+const tileCountValue = l("tileCountValue");
 
 let _s = 0.3;
 let _f = 0.2;
@@ -117,45 +141,59 @@ function updateValue(value, id){
         case(1):
             sliderSValue.textContent = value;
             _s = parseFloat(value);
+            drawPerlin();
             break;
         case(2):
             sliderFValue.textContent = value;
             _f = parseFloat(value);
+            drawPerlin();
             break;
         case(3):
             sliderOValue.textContent = value;
             _o = parseFloat(value);
+            drawPerlin();
             break;
         case(4):
             sliderPValue.textContent = value;
             _p = parseFloat(value);
+            drawPerlin();
             break;
         case(5):
             sliderAValue.textContent = value;
             _a = parseFloat(value);
+            drawPerlin();
             break;
         case(6):
             sliderS2Value.textContent = value;
             _s2 = parseFloat(value);
+            drawPerlin();
             break;
         case(7):
             sliderF2Value.textContent = value;
             _f2 = parseFloat(value);
+            drawPerlin();
             break;
         case(8):
             sliderO2Value.textContent = value;
             _o2 = parseFloat(value);
+            drawPerlin();
             break;
         case(9):
             sliderP2Value.textContent = value;
             _p2 = parseFloat(value);
+            drawPerlin();
             break;
         case(10):
             sliderA2Value.textContent = value;
             _a2 = parseFloat(value);
+            drawPerlin();
+            break;
+        case(11):
+            tileCountValue.textContent = value;
+            tileGridCount = value;
+            drawTile();
             break;
     }
-    drawPerlin();
 }
 
 // img.crossOrigin = "same-origin";
@@ -225,60 +263,32 @@ function drawPerlin(){
             precMap[y][x] = Math.max(0, Math.min(Math.ceil((precipitation + 1 / 2) * 16), 15));
             
             output = getColour(tempMap[y][x], precMap[y][x]);
-            mark(ctx, x, y, output, squareSize);
+            mark(ctx_pg, x, y, output, squareSize);
         }
     }
-    // drawTile(tempMap, precMap);
     console.log("Drawn Perlin");
 }
 
-function drawTile(tempMap, precMap) {
-    const tileSize = squareSize;
-    const subSize = tileSize / 8;
-    const size = gridCount;
+function drawTile() {
+    const tileSize = tileCanvasWidth / tileGridCount;
+    const pixelSize = tileSize / 8;
 
-    // Collect surrounding tile data (3x3 grid)
-    const grid = [];
-    for(let x = 0; x < size; x++){
-        for(let y = 0; y < size; y++){
-            for (let dy = -1; dy <= 1; dy++) {
-                for (let dx = -1; dx <= 1; dx++) {
-                    grid.push(getDataSafe(tempMap, precMap, x + dx, y + dy));
+    
+    for(let x = 0; x < tileGridCount; x++){
+        for(let y = 0; y < tileGridCount; y++){
+            for(let i = 0; i < UV_COORDS.length; i++){
+                for(const [fx, fy] of UV_COORDS[i]){
+                    // console.log(`X: ${x}, Y: ${y}, sub-X: ${fx}, sub-Y: ${fy}.`);
+                    ctx_tc.fillStyle = COLOURS[i];
+                    ctx_tc.fillRect((fx * pixelSize) + (x * tileSize), (fy * pixelSize) + (y * tileSize), pixelSize + 1, pixelSize + 1);
                 }
             }
+            console.log("Drawn Tile.");
         }
     }
+    
 
-    for (let i = 0; i < UV_COORDS.length; i++) {
-        const uvSet = UV_COORDS[i];
-        // // Normalise UV to 0–1 within the 8×8 tile
-        const fx = uvSet[0] / 7;
-        const fy = uvSet[1] / 7;
-
-        // Interpolate between 4 corners for smooth gradient
-        const tl = grid[0]; // top-left
-        const tr = grid[2]; // top-right
-        const bl = grid[6]; // bottom-left
-        const br = grid[8]; // bottom-right
-
-        const interpTemp = bilerp(tl.temp, tr.temp, bl.temp, br.temp, fx, fy);
-        const interpPrec = bilerp(tl.prec, tr.prec, bl.prec, br.prec, fx, fy);
-
-        const col = getColour(interpTemp, interpPrec);
-        ctx.fillStyle = `rgb(${col.r},${col.g},${col.b})`;
-
-        // Draw subpixel
-        ctx.fillRect(
-            x * tileSize + ux * subSize,
-            y * tileSize + uy * subSize,
-            subSize,
-            subSize
-        );
-        // const fx = x + UV_COORDS[i][0];
-        // const fy = y + UV_COORDS[i][1];
-        // console.log(`X: ${x}, Y: ${y}. FX: ${fx}, FY: ${fy}. Tilesize / i: ${tileSize / y}.`);
-        // mark(ctx, fx, fy, colourMap[y * 16 + x], Math.floor(squareSize / 8));
-    }
+    //mark(ctx_tc, fx, fy, colourMap[y * 16 + x], Math.floor(squareSize / 8));
 }
 
 
@@ -302,14 +312,21 @@ function createTile(temperature, precipitation, x, y){
     const c = getColour(temperature, precipitation);
     const colour = `rgb(${c.r},${c.g},${c.b})`;
 
-    mark(ctx, x, y, colour, squareSize);
+    mark(ctx_pg, x, y, colour, squareSize);
 }
 
 function getColour(x, y){
     
     const index = y * 16 + x;
-    const colour = colourMap[index];
-    return `rgb(${colour.r},${colour.g},${colour.b})`;
+    const c = colourMap[index];
+
+    // console.log(`Index ${index} of colourMap returned ${colour}.`);
+
+    if(c === undefined) console.log("Botched.");
+    // else{ console.log(c); }
+    const colour = undefined ? "rgb(1,1,1)" : `rgb(${c.r},${c.g},${c.b})`;
+
+    return colour;
 }
 
 function getColourSet(tempMap, precMap){
@@ -323,7 +340,12 @@ function mapValueToRange(val, rng){
     return rng[index];
 }
 
+function getCanvasWidth(_canvas){
+    return parseFloat(getComputedStyle(_canvas).width);
+}
+
 drawPerlin();
+drawTile();
 // drawCheckerboard(canvas, canvasWidth, 32);
 
 </script>
