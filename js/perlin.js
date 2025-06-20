@@ -53,10 +53,8 @@ function perlin(x, y, z) {
   );
 }
 
-function octavePerlin(x, y, z, octaves, persistence){
+function octavePerlin(x, y, z, octaves, persistence, frequency, amplitude){
   let total = 0;
-  let frequency = 0.4;
-  let amplitude = 0.4;
   let maxVal = 0; // for normalisation
 
   for(let i = 0; i < octaves; i++){
