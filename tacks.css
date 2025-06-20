@@ -99,7 +99,6 @@ button{
 }
 button:hover{
 	background-color: var(--feature);
-
 }
 label{
 	font-size: 32px;

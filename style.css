@@ -111,3 +111,43 @@ pre.ascii{
     color: var(--champagne-pink);
     opacity: 1;
 }
+button{
+	font-size: 16px;
+	padding: 8px;
+	margin: 4px;
+	color: var(--eerie-black);
+	background-color: var(--earth-yellow);
+	transition-duration: 0.2s;
+	font-family: monospace;
+	font-weight: bold;
+}
+button:hover{
+	background-color: var(--cosmic-latte);
+}
+
+.slider{
+    appearance: none;
+    background: var(--dim-gray);
+    width: auto;
+    height: 6px;
+    border-radius: 12px;
+    opacity: 0.9;
+    transition: .2s;
+}
+.slider:hover{
+    opacity: 1;
+    height: 10px;
+}
+.slider::-webkit-slider-thumb{
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    opacity: 1;
+    background-color: var(--earth-yellow);
+}
+
+.sliderDiv{
+    height: 24px;
+    padding: 4px;
+}

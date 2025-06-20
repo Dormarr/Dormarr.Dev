@@ -5,83 +5,105 @@
     <title id="tabTitlePG">Procedural Generation</title>
 </head>
 <body>
+    <div style="width: 100%; display: flex; justify-content: left;">
+		<div style="width: 90%; height: fit-content; display: flex; padding: 12px 32px; flex-direction: row; justify-content: space-between;">
+			<div style="width: fit-content;">
+				<a href="../index.php">Home</a>
+			</div>
+		</div>
+	</div>
     <div style="display: flex; flex-direction: column; width: 100%; justify-content: center; align-items: center;">
-        <h2 style="text-align: center;">Procedural Generation</h2>
+        <h2 style="text-align: center; margin-top: 32px;">Procedural Generation</h2>
+        <p style="max-width: 512px; word-wrap: normal;">
+            The below shows a system I built a while ago, where you use two perlin maps to
+            simulate temperature and precipitation to generate a semi-realistic biome model.
+            I reused an old colour map to represent these biome values. 
+            Minecraft, for example, uses this same method.
+            <br>
+            <br>
+            Play with the sliders to get a sense of what does what.
+        </p>
         <canvas id="proceduralCanvas" style="width: 512px; height: 512px; background-color: aliceblue;"></canvas>
         <img id="colourMap" src="../images/colourMap.png" style="display: none; width:8px; height: 8px;">
         <canvas id="colourCanvas" style="display: none;"></canvas>
-        <button onClick="drawPerlin()">Redraw</button>
+        <button onClick="drawPerlin()" style="width: 128px;">Redraw</button>
         <br>
         <div style="display: flex; flex-direction: row; gap: 24px;">
-            <div>
+            <div style="display: flex; flex-direction: column;">
                 <h3>Temperature</h3>
-                <div>
+                <div class="sliderDiv">
                     <label>Scale</label>
-                    <input id="sliderS" type="range" min="0" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 1)">
+                    <input id="sliderS" class="slider" type="range" min="0" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 1)">
                     <label id="sliderSLabel">0.5</label>
                 </div>
-                <div>
+                <div class="sliderDiv">
                     <label>Frequency</label>
-                    <input id="sliderF" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 2)">
+                    <input id="sliderF" class="slider" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 2)">
                     <label id="sliderFLabel">0.5</label>
                 </div>
-                <div>
+                <div class="sliderDiv">
                     <label>Octaves</label>
-                    <input id="sliderO" type="range" min="1" max="10" value="5" step="1" onInput="updateValue(this.value, 3)">
+                    <input id="sliderO" class="slider" type="range" min="1" max="10" value="5" step="1" onInput="updateValue(this.value, 3)">
                     <label id="sliderOLabel">5</label>
                 </div>
-                <div>
+                <div class="sliderDiv">
                     <label>Persistence</label>
-                    <input id="sliderP" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 4)">
+                    <input id="sliderP" class="slider" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 4)">
                     <label id="sliderPLabel">0.5</label>
                 </div>
-                <div>
+                <div class="sliderDiv">
                     <label>Amplitude</label>
-                    <input id="sliderA" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 5)">
+                    <input id="sliderA" class="slider" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 5)">
                     <label id="sliderALabel">0.5</label>
                 </div>
             </div>
-            <div>
+            <div style="display: flex; flex-direction: column;">
                 <h3>Precipitation</h3>
-                <div>
+                <div class="sliderDiv">
                     <label>Scale</label>
-                    <input id="sliderS2" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 6)">
+                    <input id="sliderS2" class="slider" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 6)">
                     <label id="sliderS2Label">0.5</label>
                 </div>
-                <div>
+                <div class="sliderDiv">
                     <label>Frequency</label>
-                    <input id="sliderF2" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 7)">
+                    <input id="sliderF2" class="slider" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 7)">
                     <label id="sliderF2Label">0.5</label>
                 </div>
-                <div>
+                <div class="sliderDiv">
                     <label>Octaves</label>
-                    <input id="sliderO2" type="range" min="1" max="10" value="5" step="1" onInput="updateValue(this.value, 8)">
+                    <input id="sliderO2" class="slider" type="range" min="1" max="10" value="5" step="1" onInput="updateValue(this.value, 8)">
                     <label id="sliderO2Label">5</label>
                 </div>
-                <div>
+                <div class="sliderDiv">
                     <label>Persistence</label>
-                    <input id="sliderP2" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 9)">
+                    <input id="sliderP2" class="slider" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 9)">
                     <label id="sliderP2Label">0.5</label>
                 </div>
-                <div>
+                <div class="sliderDiv">
                     <label>Amplitude</label>
-                    <input id="sliderA2" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 10)">
+                    <input id="sliderA2" class="slider" type="range" min="0.01" max="1" value="0.5" step="0.01" onInput="updateValue(this.value, 10)">
                     <label id="sliderA2Label">0.5</label>
                 </div>
             </div>
         </div>
+        <p style="max-width: 512px; word-wrap: normal;">
+            I won't go into how it works specifically, but noise functions can be used for all sorts.
+            Having a sort of weighted location system is invaluable, particularly in game design.
+            Pair that with logic and condition gates and you can generate an incredibly detailed, natural looking, world.
+        </p>
         <div style="width: 90%; height: 2px; background-color: white; margin: 32px;"></div>
         <h3>Dynamic Tiles (WIP)</h3>
-        <div style="display: flex; flex-direction: row;">
+        <div style="display: flex; flex-direction: row; align-items: center;">
             <canvas id="tileCanvas" style="width: 256px; height: 256px; background-color: blue;"></canvas>
-            <p style="max-width: 200px; word-wrap: normal;">These are entirely code generated.
-                Using overlapping perlin maps to determine temperature and precipitation, it pulls a colour
-                from a carefully constructed biome colour map, and assigns colour similarly to UV textures.
+            <p style="max-width: 200px; word-wrap: normal;">
+                Having designed a UV tile, I converted it to coordinate data and generate tiles entirely with code.
+                By pulling the biome data, I can then recolour each segment to create smooth terrain transitions.
+                It's essentially procedural pixel art.
             </p>
         </div>
-        <div>
+        <div class="sliderDiv">
             <label>Tile Count</label>
-            <input id="tileCountSlider" type="range" min="0" max="20" value="2" step="1" onInput="updateValue(this.value, 11)">
+            <input id="tileCountSlider" class="slider" type="range" min="0" max="20" value="2" step="1" onInput="updateValue(this.value, 11)">
             <label id="tileCountValue">2</label>
         </div>
         <div style="height: 800px;"></div>

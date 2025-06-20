@@ -23,6 +23,9 @@
             <a href="pages/tacks.html">> Tacks <</a>
         </div>
         <div>
+            <a href="pages/proc-gen.html">> Proc-Gen <</a>
+        </div>
+        <div>
             <a style="text-decoration: line-through;">Something else</a>
         </div>
     </div>
