@@ -94,17 +94,18 @@
         <div style="width: 90%; height: 2px; background-color: white; margin: 32px;"></div>
         <h3>Dynamic Tiles (WIP)</h3>
         <div style="display: flex; flex-direction: row; align-items: center;">
-            <canvas id="tileCanvas" style="width: 256px; height: 256px; background-color: blue;"></canvas>
+            <canvas id="tileCanvas" style="width: 512px; height: 512px; background-color: blue;"></canvas>
             <p style="max-width: 200px; word-wrap: normal;">
                 Having designed a UV tile, I converted it to coordinate data and generate tiles entirely with code.
                 By pulling the biome data, I can then recolour each segment to create smooth terrain transitions.
                 It's essentially procedural pixel art.
             </p>
         </div>
+        <button onclick="drawTile()">Redraw Tiles</button>
         <div class="sliderDiv">
             <label>Tile Count</label>
-            <input id="tileCountSlider" class="slider" type="range" min="0" max="20" value="2" step="1" onInput="updateValue(this.value, 11)">
-            <label id="tileCountValue">2</label>
+            <input id="tileCountSlider" class="slider" type="range" min="0" max="24" value="12" step="1" onInput="updateValue(this.value, 11)">
+            <label id="tileCountValue">12</label>
         </div>
         <div style="height: 800px;"></div>
     </div>
@@ -126,7 +127,7 @@ const colourMapCanvas = l("colourCanvas");
 const img = l("colourMap");
 const ctx_cm = colourMapCanvas.getContext("2d", { willReadFrequently: true });
 
-let tileGridCount = 2;
+let tileGridCount = 16;
 const tileCanvas = l("tileCanvas");
 const ctx_tc = tileCanvas.getContext('2d');
 const tileCanvasWidth = getCanvasWidth(tileCanvas);
@@ -158,7 +159,10 @@ let _o2 = 2;
 let _p2 = 1;
 let _a2 = 1;
 
+let seed = 0;
+
 function updateValue(value, id){
+    // This ID system was thrown together without much thought. It should probably be changed but it's good enough for now.
     switch(id){
         case(1):
             sliderSValue.textContent = value;
@@ -270,19 +274,23 @@ function loadCanvas(){
 
 loadCanvas();
 
+function generateSeed(){
+    seed = Math.floor((Math.random()) * 255);
+}
+
 function drawPerlin(){
     let scale = _s
-    let seed = Math.floor((Math.random()) * 255);
+    generateSeed();
     for(let y = 0; y < gridCount; y++){
         tempMap[y] = [];
         precMap[y] = [];
         for(let x = 0; x < gridCount; x++){
             // const value = octavePerlin(x * scale, y * scale, seed * scale, 0.5, 1, 0.5, 0.5);
-            const temperature =     octavePerlin(x * _s2, y * _s2, seed * _s2, _o, _p, _f, _a);
+            const temperature =     octavePerlin(x * _s, y * _s, seed * _s, _o, _p, _f, _a);
             const precipitation =   octavePerlin(x * _s2, y * _s2, seed * _s2, _o2, _p2, _f2, _a2);
 
-            tempMap[y][x] = Math.max(0, Math.min(Math.ceil((temperature + 1 / 2) * 16), 15));
-            precMap[y][x] = Math.max(0, Math.min(Math.ceil((precipitation + 1 / 2) * 16), 15));
+            tempMap[y][x] = normaliseToColourMap(temperature);
+            precMap[y][x] = normaliseToColourMap(precipitation);
             
             output = getColour(tempMap[y][x], precMap[y][x]);
             mark(ctx_pg, x, y, output, squareSize);
@@ -291,28 +299,94 @@ function drawPerlin(){
     console.log("Drawn Perlin");
 }
 
+// This is just a demo so doesn't have to be perfect or align with biome values.
 function drawTile() {
+    generateSeed();
     const tileSize = tileCanvasWidth / tileGridCount;
     const pixelSize = tileSize / 8;
-
     
     for(let x = 0; x < tileGridCount; x++){
         for(let y = 0; y < tileGridCount; y++){
+
+            const col = getAdjacentColours(x, y);
+
             for(let i = 0; i < UV_COORDS.length; i++){
+
                 for(const [fx, fy] of UV_COORDS[i]){
-                    // console.log(`X: ${x}, Y: ${y}, sub-X: ${fx}, sub-Y: ${fy}.`);
-                    ctx_tc.fillStyle = COLOURS[i];
+                    
+                    // ctx_tc.fillStyle = COLOURS[i]; // Grayscale
+                    ctx_tc.fillStyle = col[i];
+                    // ctx_tc.fillStyle = getBlendedColour(fx, fy, col);
                     ctx_tc.fillRect((fx * pixelSize) + (x * tileSize), (fy * pixelSize) + (y * tileSize), pixelSize + 1, pixelSize + 1);
                 }
             }
             console.log("Drawn Tile.");
         }
     }
-    
-
-    //mark(ctx_tc, fx, fy, colourMap[y * 16 + x], Math.floor(squareSize / 8));
 }
 
+function getAdjacentColours(x, y){
+    let adj = [];
+    let i = 0;
+    
+    for(let fx = x-2; fx <= x+2; fx++){
+        for(let fy = y-2; fy <= y+2; fy++){
+            const temperature =     octavePerlin((-fx / 4) * _s, (-fy / 4) * _s, seed * _s, _o, _p, _f, _a);
+            const precipitation =   octavePerlin((-fx / 4) * _s2, (-fy / 4) * _s2, seed * _s2, _o2, _p2, _f2, _a2);
+            
+            const t = normaliseToColourMap(temperature);
+            const p = normaliseToColourMap(precipitation);
+
+            switch(i){
+                case 5:
+                    adj[i] = getColour(t, p, -4);
+                    break;
+                case 7:
+                    adj[i] = getColour(t, p, -4);
+                    break;
+                case 8:
+                    adj[i] = getColour(t, p, -4);
+                    break;
+                case 10:
+                    adj[i] = getColour(t, p, -4);
+                    break;
+                default:
+                    adj[i] = getColour(t, p);
+                    break;
+            }
+            i++;
+        }
+    }
+
+    return adj;
+}
+
+function lerpColour(c1, c2, t) {
+    const regex = /\d+/gm;
+    const [r1, g1, b1] = c1.match(regex).map(Number);
+    const [r2, g2, b2] = c2.match(regex).map(Number);
+    const r = Math.round(r1 + (r2 - r1) * t);
+    const g = Math.round(g1 + (g2 - g1) * t);
+    const b = Math.round(b1 + (b2 - b1) * t);
+    return `rgb(${r},${g},${b})`;
+}
+
+function getBlendedColour(fx, fy, col){
+    const x = fx;
+    const y = fy;
+    console.log(`X: ${x}, Y:${y}.`);
+
+
+    const c00 = col[y + x];
+    const c10 = col[y + x+1];
+    const c01 = col[y + 1 + x];
+    const c11 = col[y + 1 + x+1];
+
+    const top = lerpColour(c00, c10, 1);
+    const bottom = lerpColour(c01, c11, 1);
+    return lerpColour(top, bottom, 1);
+
+}
 
 function bilerp(tl, tr, bl, br, x, y) {
     const top = tl + (tr - tl) * x;
@@ -337,7 +411,11 @@ function createTile(temperature, precipitation, x, y){
     mark(ctx_pg, x, y, colour, squareSize);
 }
 
-function getColour(x, y){
+function normaliseToColourMap(n){
+    return Math.max(0, Math.min(Math.ceil((n + 1 / 2) * 16), 15));
+}
+
+function getColour(x, y, ad = null){
     
     const index = y * 16 + x;
     const c = colourMap[index];
@@ -346,7 +424,7 @@ function getColour(x, y){
 
     if(c === undefined) console.log("Botched.");
     // else{ console.log(c); }
-    const colour = undefined ? "rgb(1,1,1)" : `rgb(${c.r},${c.g},${c.b})`;
+    const colour = undefined ? "rgb(1,1,1)" : `rgb(${c.r + ad},${c.g + ad},${c.b + ad})`;
 
     return colour;
 }
