@@ -95,16 +95,20 @@
         <h3>Dynamic Tiles (WIP)</h3>
         <div style="display: flex; flex-direction: row; align-items: center;">
             <canvas id="tileCanvas" style="width: 512px; height: 512px; background-color: blue;"></canvas>
-            <p style="max-width: 200px; word-wrap: normal;">
+            <p style="max-width: 400px; word-wrap: normal;">
                 Having designed a UV tile, I converted it to coordinate data and generate tiles entirely with code.
                 By pulling the biome data, I can then recolour each segment to create smooth terrain transitions.
                 It's essentially procedural pixel art.
+                <br>
+                <br>
+                This was originally developed in Unity, where I achieved a smoother gradient but at the sacrifice of speed.
+                This method, albeit far from perfect, has a nice dithering feel and is MUCH faster to generate.
             </p>
         </div>
         <button onclick="drawTile()">Redraw Tiles</button>
         <div class="sliderDiv">
             <label>Tile Count</label>
-            <input id="tileCountSlider" class="slider" type="range" min="0" max="24" value="12" step="1" onInput="updateValue(this.value, 11)">
+            <input id="tileCountSlider" class="slider" type="range" min="0" max="24" value="4" step="1" onInput="updateValue(this.value, 11)">
             <label id="tileCountValue">12</label>
         </div>
         <div style="height: 800px;"></div>
@@ -127,7 +131,7 @@ const colourMapCanvas = l("colourCanvas");
 const img = l("colourMap");
 const ctx_cm = colourMapCanvas.getContext("2d", { willReadFrequently: true });
 
-let tileGridCount = 16;
+let tileGridCount = 4;
 const tileCanvas = l("tileCanvas");
 const ctx_tc = tileCanvas.getContext('2d');
 const tileCanvasWidth = getCanvasWidth(tileCanvas);
@@ -246,6 +250,7 @@ const COLOURS = [
     'rgb(255,255,255)',
 ]
 
+// Hardcoded pixel art coords. 8x8
 const UV_COORDS = [
     [[0,0],[1,0],[0,1]],
     [[2,0],[2,1],[3,1],[3,2]],
@@ -309,14 +314,16 @@ function drawTile() {
         for(let y = 0; y < tileGridCount; y++){
 
             const col = getAdjacentColours(x, y);
+            const bcol = getBlendedColour(col);
+
 
             for(let i = 0; i < UV_COORDS.length; i++){
 
                 for(const [fx, fy] of UV_COORDS[i]){
                     
                     // ctx_tc.fillStyle = COLOURS[i]; // Grayscale
-                    ctx_tc.fillStyle = col[i];
-                    // ctx_tc.fillStyle = getBlendedColour(fx, fy, col);
+                    // ctx_tc.fillStyle = col[i];
+                    ctx_tc.fillStyle = bcol[i];
                     ctx_tc.fillRect((fx * pixelSize) + (x * tileSize), (fy * pixelSize) + (y * tileSize), pixelSize + 1, pixelSize + 1);
                 }
             }
@@ -329,34 +336,30 @@ function getAdjacentColours(x, y){
     let adj = [];
     let i = 0;
     
-    for(let fx = x-2; fx <= x+2; fx++){
-        for(let fy = y-2; fy <= y+2; fy++){
-            const temperature =     octavePerlin((-fx / 4) * _s, (-fy / 4) * _s, seed * _s, _o, _p, _f, _a);
-            const precipitation =   octavePerlin((-fx / 4) * _s2, (-fy / 4) * _s2, seed * _s2, _o2, _p2, _f2, _a2);
+    let ht, hp;
+
+    for(let fy = y-2; fy <= y+2; fy++){
+        for(let fx = x-2; fx <= x+2; fx++){
+            const temperature =     octavePerlin((-fx / 2) * _s, (-fy / 2) * _s, seed * _s, _o, _p, _f, _a);
+            const precipitation =   octavePerlin((-fx / 2) * _s2, (-fy / 2) * _s2, seed * _s2, _o2, _p2, _f2, _a2);
             
             const t = normaliseToColourMap(temperature);
             const p = normaliseToColourMap(precipitation);
 
-            switch(i){
-                case 5:
-                    adj[i] = getColour(t, p, -4);
-                    break;
-                case 7:
-                    adj[i] = getColour(t, p, -4);
-                    break;
-                case 8:
-                    adj[i] = getColour(t, p, -4);
-                    break;
-                case 10:
-                    adj[i] = getColour(t, p, -4);
-                    break;
-                default:
-                    adj[i] = getColour(t, p);
-                    break;
+            if(fy === 0 && fx === 0){
+                ht = t;
+                hp = p;
             }
+            adj[i] = getColour(t, p);
             i++;
         }
     }
+
+    // const homeCol = getColour(ht, hp);
+    // adj[5] = homeCol;
+    // adj[6] = getColour(ht, hp);
+    // adj[9] = getColour(ht, hp);
+    // adj[10] = homeCol;
 
     return adj;
 }
@@ -371,20 +374,58 @@ function lerpColour(c1, c2, t) {
     return `rgb(${r},${g},${b})`;
 }
 
-function getBlendedColour(fx, fy, col){
-    const x = fx;
-    const y = fy;
-    console.log(`X: ${x}, Y:${y}.`);
+function adjustColour(c, a){
+    const regex = /\d+/gm;
+    const [r1, g1, b1] = c.match(regex).map(Number);
+    const r = r1 + a.r;
+    const g = g1 + a.g;
+    const b = b1 + a.b;
+    return `rgb(${r},${g},${b})`;
+}
 
+function getBlendedColour(col){
+    const cTL = col[6];
+    const cTR = col[8];
+    const cBL = col[16];
+    const cBR = col[18];
+    const cT = col[7];
+    const cL = col[11];
+    const cR = col[13];
+    const cB = col[17];
+    
+    const c_ = col[12];
 
-    const c00 = col[y + x];
-    const c10 = col[y + x+1];
-    const c01 = col[y + 1 + x];
-    const c11 = col[y + 1 + x+1];
+    const ratio = 0.4;
 
-    const top = lerpColour(c00, c10, 1);
-    const bottom = lerpColour(c01, c11, 1);
-    return lerpColour(top, bottom, 1);
+    col[7] = lerpColour(cT, c_, ratio)
+    col[11] = lerpColour(cL, c_, ratio);
+    col[13] = lerpColour(cR, c_, ratio);
+    col[17] = lerpColour(cB, c_, ratio);
+    col[6] = lerpColour(col[7], col[11], ratio);
+    col[8] = lerpColour(col[7], col[13], ratio);
+    col[16] = lerpColour(col[17], col[11], ratio);
+    col[18] = lerpColour(col[17], col[13], ratio);
+
+    let bcol = [];
+
+    bcol[0] = lerpColour(cT, cL, ratio);
+    bcol[1] = lerpColour(cT, c_, ratio);
+    bcol[2] = lerpColour(cT, c_, ratio);
+    bcol[3] = lerpColour(cT, cR, ratio);
+    bcol[4] = lerpColour(cL, c_, ratio);
+    bcol[5] = adjustColour(c_, {r: -2, g: -4, b: -3});
+    bcol[6] = c_;
+    bcol[7] = lerpColour(cR, c_, ratio);
+    bcol[8] = lerpColour(cL, c_, ratio);
+    bcol[9] = c_;
+    bcol[10] = adjustColour(c_, {r: -2, g: -4, b: -3});
+    bcol[11] = lerpColour(cR, c_, ratio);
+    bcol[12] = lerpColour(cB, cL, ratio);
+    bcol[13] = lerpColour(cB, c_, ratio);
+    bcol[14] = lerpColour(cB, c_, ratio);
+    bcol[15] = lerpColour(cB, cR, ratio);
+
+    return bcol;
 
 }
 
@@ -427,11 +468,6 @@ function getColour(x, y, ad = null){
     const colour = undefined ? "rgb(1,1,1)" : `rgb(${c.r + ad},${c.g + ad},${c.b + ad})`;
 
     return colour;
-}
-
-function getColourSet(tempMap, precMap){
-    // Log and calculate colours of surrounding tiles.
-    // Return a 16 colour set that corresponds with the UV coords.
 }
 
 function mapValueToRange(val, rng){
