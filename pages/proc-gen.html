@@ -94,22 +94,25 @@
         <div style="width: 90%; height: 2px; background-color: white; margin: 32px;"></div>
         <h3>Dynamic Tiles (WIP)</h3>
         <div style="display: flex; flex-direction: row; align-items: center;">
-            <canvas id="tileCanvas" style="width: 512px; height: 512px; background-color: blue;"></canvas>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <canvas id="tileCanvas" style="width: 512px; height: 512px; background-color: blue;"></canvas>
+                <!-- <input type="text" id="seedInput"> -->
+                <button onclick="drawTiles()" style="max-width: 256px;">Redraw Tiles</button>
+                <div class="sliderDiv">
+                    <label>Tile Count</label>
+                    <input id="tileCountSlider" class="slider" type="range" min="0" max="24" value="12" step="1" onInput="updateValue(this.value, 11)">
+                    <label id="tileCountValue">12</label>
+                </div>
+            </div>
             <p style="max-width: 400px; word-wrap: normal;">
-                Having designed a UV tile, I converted it to coordinate data and generate tiles entirely with code.
-                By pulling the biome data, I can then recolour each segment to create smooth terrain transitions.
-                It's essentially procedural pixel art.
+                Having designed a single UV tile, I converted it to coordinate data and generate tiles entirely with code.
+                By pulling the biome data, I can then recolour each segment to create smooth terrain transitions, using a colour map of rgb values.
+                The result is a wide range of terrain, stemming from a single pieces of art.
                 <br>
                 <br>
-                This was originally developed in Unity, where I achieved a smoother gradient but at the sacrifice of speed.
-                This method, albeit far from perfect, has a nice dithering feel and is MUCH faster to generate.
+                I originally developed this technique for my game Khôra, but found it too computationally taxing to use at the time.
+                Although now having made this, maybe I should revisit it...
             </p>
-        </div>
-        <button onclick="drawTile()">Redraw Tiles</button>
-        <div class="sliderDiv">
-            <label>Tile Count</label>
-            <input id="tileCountSlider" class="slider" type="range" min="0" max="24" value="4" step="1" onInput="updateValue(this.value, 11)">
-            <label id="tileCountValue">12</label>
         </div>
         <div style="height: 800px;"></div>
     </div>
@@ -131,7 +134,7 @@ const colourMapCanvas = l("colourCanvas");
 const img = l("colourMap");
 const ctx_cm = colourMapCanvas.getContext("2d", { willReadFrequently: true });
 
-let tileGridCount = 4;
+let tileGridCount = 12;
 const tileCanvas = l("tileCanvas");
 const ctx_tc = tileCanvas.getContext('2d');
 const tileCanvasWidth = getCanvasWidth(tileCanvas);
@@ -163,7 +166,8 @@ let _o2 = 2;
 let _p2 = 1;
 let _a2 = 1;
 
-let seed = 0;
+// const seedInput = l("seedInput");
+let seed;
 
 function updateValue(value, id){
     // This ID system was thrown together without much thought. It should probably be changed but it's good enough for now.
@@ -221,16 +225,15 @@ function updateValue(value, id){
         case(11):
             tileCountValue.textContent = value;
             tileGridCount = value;
-            drawTile();
+            drawTiles();
             break;
     }
 }
 
-// img.crossOrigin = "same-origin";
-
 let tempMap = [];
 let precMap = [];
 
+// Grayscale array for debugging
 const COLOURS = [
     'rgb(1,1,1)',
     'rgb(20,20,20)',
@@ -283,9 +286,19 @@ function generateSeed(){
     seed = Math.floor((Math.random()) * 255);
 }
 
+function regeneratePerlin(value, id){
+    updateValue(value, id);
+    generateSeed();
+    drawPerlin();
+}
+
 function drawPerlin(){
     let scale = _s
+
+    // let seedIn = seedInput.textContent;
+    // seed = (seedIn != undefined || seedIn != null) ? seedIn : generateSeed();
     generateSeed();
+
     for(let y = 0; y < gridCount; y++){
         tempMap[y] = [];
         precMap[y] = [];
@@ -304,12 +317,12 @@ function drawPerlin(){
     console.log("Drawn Perlin");
 }
 
-// This is just a demo so doesn't have to be perfect or align with biome values.
-function drawTile() {
-    generateSeed();
+function drawTiles() {
     const tileSize = tileCanvasWidth / tileGridCount;
     const pixelSize = tileSize / 8;
-    
+    // let seedIn = seedInput.textContent;
+    generateSeed();
+
     for(let x = 0; x < tileGridCount; x++){
         for(let y = 0; y < tileGridCount; y++){
 
@@ -327,9 +340,9 @@ function drawTile() {
                     ctx_tc.fillRect((fx * pixelSize) + (x * tileSize), (fy * pixelSize) + (y * tileSize), pixelSize + 1, pixelSize + 1);
                 }
             }
-            console.log("Drawn Tile.");
         }
     }
+    console.log(`Drawn ${tileGridCount * tileGridCount} Tiles.`);
 }
 
 function getAdjacentColours(x, y){
@@ -354,12 +367,6 @@ function getAdjacentColours(x, y){
             i++;
         }
     }
-
-    // const homeCol = getColour(ht, hp);
-    // adj[5] = homeCol;
-    // adj[6] = getColour(ht, hp);
-    // adj[9] = getColour(ht, hp);
-    // adj[10] = homeCol;
 
     return adj;
 }
@@ -397,16 +404,9 @@ function getBlendedColour(col){
 
     const ratio = 0.4;
 
-    col[7] = lerpColour(cT, c_, ratio)
-    col[11] = lerpColour(cL, c_, ratio);
-    col[13] = lerpColour(cR, c_, ratio);
-    col[17] = lerpColour(cB, c_, ratio);
-    col[6] = lerpColour(col[7], col[11], ratio);
-    col[8] = lerpColour(col[7], col[13], ratio);
-    col[16] = lerpColour(col[17], col[11], ratio);
-    col[18] = lerpColour(col[17], col[13], ratio);
-
     let bcol = [];
+
+    // I kind of hate this but it works so meh.
 
     bcol[0] = lerpColour(cT, cL, ratio);
     bcol[1] = lerpColour(cT, c_, ratio);
@@ -470,6 +470,7 @@ function getColour(x, y, ad = null){
     return colour;
 }
 
+// DEPRECATED
 function mapValueToRange(val, rng){
     const normalised = (val + 1) / 2;
     const index = Math.floor(normalised * (rng.length - 1));
@@ -481,7 +482,7 @@ function getCanvasWidth(_canvas){
 }
 
 drawPerlin();
-drawTile();
+drawTiles();
 // drawCheckerboard(canvas, canvasWidth, 32);
 
 </script>
