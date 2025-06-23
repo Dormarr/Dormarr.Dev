@@ -94,17 +94,25 @@
         <div style="width: 90%; height: 2px; background-color: white; margin: 32px;"></div>
         <h3>Dynamic Tiles (WIP)</h3>
         <div style="display: flex; flex-direction: row; align-items: center;">
-            <canvas id="tileCanvas" style="width: 256px; height: 256px; background-color: blue;"></canvas>
-            <p style="max-width: 200px; word-wrap: normal;">
-                Having designed a UV tile, I converted it to coordinate data and generate tiles entirely with code.
-                By pulling the biome data, I can then recolour each segment to create smooth terrain transitions.
-                It's essentially procedural pixel art.
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <canvas id="tileCanvas" style="width: 512px; height: 512px; background-color: blue;"></canvas>
+                <!-- <input type="text" id="seedInput"> -->
+                <button onclick="drawTiles()" style="max-width: 256px;">Redraw Tiles</button>
+                <div class="sliderDiv">
+                    <label>Tile Count</label>
+                    <input id="tileCountSlider" class="slider" type="range" min="0" max="24" value="12" step="1" onInput="updateValue(this.value, 11)">
+                    <label id="tileCountValue">12</label>
+                </div>
+            </div>
+            <p style="max-width: 400px; word-wrap: normal;">
+                Having designed a single UV tile, I converted it to coordinate data and generate tiles entirely with code.
+                By pulling the biome data, I can then recolour each segment to create smooth terrain transitions, using a colour map of rgb values.
+                The result is a wide range of terrain, stemming from a single pieces of art.
+                <br>
+                <br>
+                I originally developed this technique for my game Khôra, but found it too computationally taxing to use at the time.
+                Although now having made this, maybe I should revisit it...
             </p>
-        </div>
-        <div class="sliderDiv">
-            <label>Tile Count</label>
-            <input id="tileCountSlider" class="slider" type="range" min="0" max="20" value="2" step="1" onInput="updateValue(this.value, 11)">
-            <label id="tileCountValue">2</label>
         </div>
         <div style="height: 800px;"></div>
     </div>
@@ -126,7 +134,7 @@ const colourMapCanvas = l("colourCanvas");
 const img = l("colourMap");
 const ctx_cm = colourMapCanvas.getContext("2d", { willReadFrequently: true });
 
-let tileGridCount = 2;
+let tileGridCount = 12;
 const tileCanvas = l("tileCanvas");
 const ctx_tc = tileCanvas.getContext('2d');
 const tileCanvasWidth = getCanvasWidth(tileCanvas);
@@ -158,7 +166,11 @@ let _o2 = 2;
 let _p2 = 1;
 let _a2 = 1;
 
+// const seedInput = l("seedInput");
+let seed;
+
 function updateValue(value, id){
+    // This ID system was thrown together without much thought. It should probably be changed but it's good enough for now.
     switch(id){
         case(1):
             sliderSValue.textContent = value;
@@ -213,16 +225,15 @@ function updateValue(value, id){
         case(11):
             tileCountValue.textContent = value;
             tileGridCount = value;
-            drawTile();
+            drawTiles();
             break;
     }
 }
 
-// img.crossOrigin = "same-origin";
-
 let tempMap = [];
 let precMap = [];
 
+// Grayscale array for debugging
 const COLOURS = [
     'rgb(1,1,1)',
     'rgb(20,20,20)',
@@ -242,6 +253,7 @@ const COLOURS = [
     'rgb(255,255,255)',
 ]
 
+// Hardcoded pixel art coords. 8x8
 const UV_COORDS = [
     [[0,0],[1,0],[0,1]],
     [[2,0],[2,1],[3,1],[3,2]],
@@ -270,19 +282,33 @@ function loadCanvas(){
 
 loadCanvas();
 
+function generateSeed(){
+    seed = Math.floor((Math.random()) * 255);
+}
+
+function regeneratePerlin(value, id){
+    updateValue(value, id);
+    generateSeed();
+    drawPerlin();
+}
+
 function drawPerlin(){
     let scale = _s
-    let seed = Math.floor((Math.random()) * 255);
+
+    // let seedIn = seedInput.textContent;
+    // seed = (seedIn != undefined || seedIn != null) ? seedIn : generateSeed();
+    generateSeed();
+
     for(let y = 0; y < gridCount; y++){
         tempMap[y] = [];
         precMap[y] = [];
         for(let x = 0; x < gridCount; x++){
             // const value = octavePerlin(x * scale, y * scale, seed * scale, 0.5, 1, 0.5, 0.5);
-            const temperature =     octavePerlin(x * _s2, y * _s2, seed * _s2, _o, _p, _f, _a);
+            const temperature =     octavePerlin(x * _s, y * _s, seed * _s, _o, _p, _f, _a);
             const precipitation =   octavePerlin(x * _s2, y * _s2, seed * _s2, _o2, _p2, _f2, _a2);
 
-            tempMap[y][x] = Math.max(0, Math.min(Math.ceil((temperature + 1 / 2) * 16), 15));
-            precMap[y][x] = Math.max(0, Math.min(Math.ceil((precipitation + 1 / 2) * 16), 15));
+            tempMap[y][x] = normaliseToColourMap(temperature);
+            precMap[y][x] = normaliseToColourMap(precipitation);
             
             output = getColour(tempMap[y][x], precMap[y][x]);
             mark(ctx_pg, x, y, output, squareSize);
@@ -291,28 +317,117 @@ function drawPerlin(){
     console.log("Drawn Perlin");
 }
 
-function drawTile() {
+function drawTiles() {
     const tileSize = tileCanvasWidth / tileGridCount;
     const pixelSize = tileSize / 8;
+    // let seedIn = seedInput.textContent;
+    generateSeed();
 
-    
     for(let x = 0; x < tileGridCount; x++){
         for(let y = 0; y < tileGridCount; y++){
+
+            const col = getAdjacentColours(x, y);
+            const bcol = getBlendedColour(col);
+
+
             for(let i = 0; i < UV_COORDS.length; i++){
+
                 for(const [fx, fy] of UV_COORDS[i]){
-                    // console.log(`X: ${x}, Y: ${y}, sub-X: ${fx}, sub-Y: ${fy}.`);
-                    ctx_tc.fillStyle = COLOURS[i];
+                    
+                    // ctx_tc.fillStyle = COLOURS[i]; // Grayscale
+                    // ctx_tc.fillStyle = col[i];
+                    ctx_tc.fillStyle = bcol[i];
                     ctx_tc.fillRect((fx * pixelSize) + (x * tileSize), (fy * pixelSize) + (y * tileSize), pixelSize + 1, pixelSize + 1);
                 }
             }
-            console.log("Drawn Tile.");
         }
     }
-    
-
-    //mark(ctx_tc, fx, fy, colourMap[y * 16 + x], Math.floor(squareSize / 8));
+    console.log(`Drawn ${tileGridCount * tileGridCount} Tiles.`);
 }
 
+function getAdjacentColours(x, y){
+    let adj = [];
+    let i = 0;
+    
+    let ht, hp;
+
+    for(let fy = y-2; fy <= y+2; fy++){
+        for(let fx = x-2; fx <= x+2; fx++){
+            const temperature =     octavePerlin((-fx / 2) * _s, (-fy / 2) * _s, seed * _s, _o, _p, _f, _a);
+            const precipitation =   octavePerlin((-fx / 2) * _s2, (-fy / 2) * _s2, seed * _s2, _o2, _p2, _f2, _a2);
+            
+            const t = normaliseToColourMap(temperature);
+            const p = normaliseToColourMap(precipitation);
+
+            if(fy === 0 && fx === 0){
+                ht = t;
+                hp = p;
+            }
+            adj[i] = getColour(t, p);
+            i++;
+        }
+    }
+
+    return adj;
+}
+
+function lerpColour(c1, c2, t) {
+    const regex = /\d+/gm;
+    const [r1, g1, b1] = c1.match(regex).map(Number);
+    const [r2, g2, b2] = c2.match(regex).map(Number);
+    const r = Math.round(r1 + (r2 - r1) * t);
+    const g = Math.round(g1 + (g2 - g1) * t);
+    const b = Math.round(b1 + (b2 - b1) * t);
+    return `rgb(${r},${g},${b})`;
+}
+
+function adjustColour(c, a){
+    const regex = /\d+/gm;
+    const [r1, g1, b1] = c.match(regex).map(Number);
+    const r = r1 + a.r;
+    const g = g1 + a.g;
+    const b = b1 + a.b;
+    return `rgb(${r},${g},${b})`;
+}
+
+function getBlendedColour(col){
+    const cTL = col[6];
+    const cTR = col[8];
+    const cBL = col[16];
+    const cBR = col[18];
+    const cT = col[7];
+    const cL = col[11];
+    const cR = col[13];
+    const cB = col[17];
+    
+    const c_ = col[12];
+
+    const ratio = 0.4;
+
+    let bcol = [];
+
+    // I kind of hate this but it works so meh.
+
+    bcol[0] = lerpColour(cT, cL, ratio);
+    bcol[1] = lerpColour(cT, c_, ratio);
+    bcol[2] = lerpColour(cT, c_, ratio);
+    bcol[3] = lerpColour(cT, cR, ratio);
+    bcol[4] = lerpColour(cL, c_, ratio);
+    bcol[5] = adjustColour(c_, {r: -2, g: -4, b: -3});
+    bcol[6] = c_;
+    bcol[7] = lerpColour(cR, c_, ratio);
+    bcol[8] = lerpColour(cL, c_, ratio);
+    bcol[9] = c_;
+    bcol[10] = adjustColour(c_, {r: -2, g: -4, b: -3});
+    bcol[11] = lerpColour(cR, c_, ratio);
+    bcol[12] = lerpColour(cB, cL, ratio);
+    bcol[13] = lerpColour(cB, c_, ratio);
+    bcol[14] = lerpColour(cB, c_, ratio);
+    bcol[15] = lerpColour(cB, cR, ratio);
+
+    return bcol;
+
+}
 
 function bilerp(tl, tr, bl, br, x, y) {
     const top = tl + (tr - tl) * x;
@@ -337,7 +452,11 @@ function createTile(temperature, precipitation, x, y){
     mark(ctx_pg, x, y, colour, squareSize);
 }
 
-function getColour(x, y){
+function normaliseToColourMap(n){
+    return Math.max(0, Math.min(Math.ceil((n + 1 / 2) * 16), 15));
+}
+
+function getColour(x, y, ad = null){
     
     const index = y * 16 + x;
     const c = colourMap[index];
@@ -346,16 +465,12 @@ function getColour(x, y){
 
     if(c === undefined) console.log("Botched.");
     // else{ console.log(c); }
-    const colour = undefined ? "rgb(1,1,1)" : `rgb(${c.r},${c.g},${c.b})`;
+    const colour = undefined ? "rgb(1,1,1)" : `rgb(${c.r + ad},${c.g + ad},${c.b + ad})`;
 
     return colour;
 }
 
-function getColourSet(tempMap, precMap){
-    // Log and calculate colours of surrounding tiles.
-    // Return a 16 colour set that corresponds with the UV coords.
-}
-
+// DEPRECATED
 function mapValueToRange(val, rng){
     const normalised = (val + 1) / 2;
     const index = Math.floor(normalised * (rng.length - 1));
@@ -367,7 +482,7 @@ function getCanvasWidth(_canvas){
 }
 
 drawPerlin();
-drawTile();
+drawTiles();
 // drawCheckerboard(canvas, canvasWidth, 32);
 
 </script>
