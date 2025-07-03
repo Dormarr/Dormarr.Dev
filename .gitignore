@@ -1,2 +1,4 @@
 /certs
 /admin
+/node_modules
+/private

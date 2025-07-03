@@ -1,3 +1,11 @@
+<?php
+require_once __DIR__ . '/private/db.php';
+
+$stmt = $pdo->query("SELECT * FROM posts ORDER BY created_at DESC");
+$posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
+
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -33,7 +41,14 @@
     <div style="display: flex; flex-direction: row; width: vw; justify-content: space-around; padding: 16px;">
         <div class="square" style="border: 2px solid maroon;  width: 60%; height: fit-content;">
             <h3>Devlogs</h3>
-            <p>I'll add some PHP widgets and stuff here</p>
+            <?php foreach ($posts as $post): ?>
+                <article>
+                    <h2><?= htmlspecialchars($post['title']) ?></h2>
+                    <div><?= $post['content'] ?></div>
+                    <small>Posted on <?= $post['created_at'] ?></small>
+                    <hr>
+                </article>
+            <?php endforeach; ?>
         </div>
         <div class="square" style="border: 2px solid blueviolet; width: 40%; height: fit-content;">
             <img src="../images/PFP.png" width="248px" height="auto" style="max-width: 100%">
