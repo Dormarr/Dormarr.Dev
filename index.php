@@ -13,10 +13,10 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title id="tabTitle">Dormarr.Dev</title>
     <link rel="manifest" href="/site.webmanifest">
 </head>
-<body style="overflow: hidden">
+<body style="overflow-x: hidden;">
     <div id="msg-box" class="message-container"></div>
     <div style="height: 210px;">
-        <pre id="ascii" class="ascii" style="width: 100%; height: 210px;"></pre>
+        <pre id="ascii" class="ascii" style="height: 210px; width: 100%; overflow: hidden;"></pre>
         <div style="position: absolute; top: 48px; left: 32px;">
             <h1>Dormarr.Dev</h1>
             <p>I'm working on it. Leave me alone.</p>
@@ -38,20 +38,24 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
     <div class="line"></div>
-    <div style="display: flex; flex-direction: row; width: vw; justify-content: space-around; padding: 16px;">
+    <div style="display: flex; flex-direction: row; width: 95%; justify-content: space-around; padding: 16px;">
         <div class="square" style="border: 2px solid maroon;  width: 60%; height: fit-content;">
             <h3>Devlogs</h3>
             <?php foreach ($posts as $post): ?>
-                <article>
-                    <h2><?= htmlspecialchars($post['title']) ?></h2>
-                    <div><?= $post['content'] ?></div>
-                    <small>Posted on <?= $post['created_at'] ?></small>
-                    <hr>
+                <?php if ($post['visibility'] !== 'public') continue; ?>
+                <article class="post-block">
+                    <h3><?= htmlspecialchars($post['title']) ?></h3>
+                    <?php if (!empty($post['subtitle'])): ?>
+                        <p class="subtitle"><?= htmlspecialchars($post['subtitle']) ?></p>
+                    <?php endif; ?>
+                    <small class="post-date">Posted on <?= date('F j, Y', strtotime($post['created_at'])) ?></small>
+                    <br>
+                    <a href="/shared/view.php?slug=<?= urlencode($post['slug']) ?>" class="read-more">Read More</a>
                 </article>
             <?php endforeach; ?>
         </div>
         <div class="square" style="border: 2px solid blueviolet; width: 40%; height: fit-content;">
-            <img src="../images/PFP.png" width="248px" height="auto" style="max-width: 100%">
+            <img src="../images/PFP.png" width="248px" height="auto" style="max-width: 75%">
             <br>
             <p>It's me.</p>
         </div>

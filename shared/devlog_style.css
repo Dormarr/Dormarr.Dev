@@ -1,0 +1,53 @@
+:root{
+    --eerie-black: rgb(17, 17, 17);
+    --cosmic-latte: #f8f4e3ff;
+    --dim-gray: #706c61ff;
+}
+
+body {
+    margin: 0;
+    padding: 2rem;
+    color: var(--cosmic-latte);
+    background-color: var(--eerie-black);
+    font-family: monospace;
+    line-height: 1.4;
+}
+
+p {
+    font-weight: 200;
+    line-height: 1.4;
+}
+
+article {
+    max-width: 800px;
+    font-size: 1rem;
+    margin: 0 auto;
+    background-color: var(--eerie-black);
+    border: 1px solid var(--dim-gray);
+    border-radius: 6px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 0px;
+    color: var(--cosmic-latte);
+}
+h2{
+    font-size: 2rem;
+    margin-top: 0px;
+}
+h3{
+    border-bottom: 1px solid var(--dim-gray);
+    font-size: 1.6rem;
+}
+
+a {
+    color: coral;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

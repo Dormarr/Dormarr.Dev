@@ -1,5 +1,6 @@
 :root{
 --eerie-black: rgb(17, 17, 17);
+--cosmic-latte: #f8f4e3ff;
 --champagne-pink: #f0e0d7ff;
 --cerise: #D64E6E;
 --burnt-sienna: #e96e52ff;
@@ -11,7 +12,6 @@
 --jet: #2a2b2aff;
 --off-black: rgb(53, 52, 49);
 --dim-gray: #706c61ff;
---cosmic-latte: #f8f4e3ff;
 --cerise2: #e5446dff;
 --coral: #ff8966ff;
 
@@ -150,4 +150,39 @@ button:hover{
 .sliderDiv{
     height: 24px;
     padding: 4px;
+}
+
+
+.post-block {
+    background-color: var(--eerie-black);
+    border: 1px solid var(--dim-gray);
+    padding: 1rem 1.5rem;
+    margin: 2rem 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.post-block h3 {
+    font-size: 1.6rem;
+}
+.post-block p{
+    margin-top: 8px
+}
+
+.post-block .subtitle {
+    font-size: 1rem;
+    color: var(--terminal-gray);
+    margin-bottom: 0.5rem;
+}
+
+.post-block .post-date {
+    font-size: 0.85rem;
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--dim-gray);
+}
+
+.post-block a.read-more {
+    display: inline-block; /* Required for margin to apply properly */
+    margin-top: 0.25rem;
 }
