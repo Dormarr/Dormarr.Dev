@@ -22,6 +22,7 @@ body{
     font-family: monospace;
     margin: 0px;
     max-width: 100%;
+    height: fit-content;
     
     &.light{
         background-color: var(--cosmic-latte);
@@ -29,14 +30,13 @@ body{
     }
 }
 .slice{
-    width: 100vw;
+    width: 100%;
     display: flex;
     justify-content: center;
-
 }
 .dir{
-    width: 100vw;
-    padding: 16px;
+    width: 100%;
+    padding: 16px 0px;
     display: flex;
     justify-content: center;
 }
@@ -49,8 +49,10 @@ body{
 }
 .line{
     background-color: var(--champagne-pink);
+    position: relative;
     height: 1px;
     width: 100%;
+    z-index: 9;
 }
 h1{
     font-size: 64px;
@@ -159,6 +161,7 @@ button:hover{
     padding: 1rem 1.5rem;
     margin: 8px 0px;
     width: 100%;
+    max-width: 512px;
     box-sizing: border-box;
 }
 
@@ -166,7 +169,7 @@ button:hover{
     font-size: 1.6rem;
 }
 .post-block p{
-    margin-top: 8px
+    margin-top: 8px;
 }
 
 .post-block .subtitle {
@@ -187,16 +190,48 @@ button:hover{
     margin-top: 0.25rem;
 }
 
-.tarot{
-    /* Interaction styling */
-    width: auto;
+.tarot {
     max-width: 256px;
-    height: auto;
-    transition-duration: 0.2s;
-    & .image{
-        width: 100%;
-    }
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
 }
-.tarot:hover{
-    scale: 1.01;
+
+.tarot .image {
+    width: 100%;
+    display: block;
+}
+
+/* Base hover glow */
+.tarot:hover {
+    box-shadow: 0 15px 30px rgba(255, 255, 255, 0.4), 0 0 30px rgba(255, 255, 255, 0.25);
+}
+
+/* Directional tilts */
+.tarot.left:hover {
+    transform: scale(1.05) rotateY(6deg) rotateX(4deg) rotateZ(-2deg);
+}
+
+.tarot.middle:hover {
+    transform: scale(1.05) rotateY(0deg) rotateX(1deg) rotateZ(1deg);
+}
+
+.tarot.right:hover {
+    transform: scale(1.05) rotateY(-6deg) rotateX(-4deg) rotateZ(2deg);
+}
+
+
+.tiled-header {
+    pointer-events: none;
+    position: relative;
+    height: 400px;
+    background-image: url('images/Dormarr_Header.png');
+    background-repeat: repeat-x;
+    background-position: top center;
+    background-size: auto 400px; /* Maintain the height, auto width */
+    margin-bottom: -160px;
+    z-index: 10;
 }

@@ -1,17 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link href="../style.css" rel="stylesheet">
+    <link href="/./style.css" rel="stylesheet">
     <title id="tabTitlePG">Procedural Generation</title>
 </head>
 <body>
-    <div style="width: 100%; display: flex; justify-content: left;">
-		<div style="width: 90%; height: fit-content; display: flex; padding: 12px 32px; flex-direction: row; justify-content: space-between;">
-			<div style="width: fit-content;">
-				<a href="../index.php">Home</a>
-			</div>
-		</div>
-	</div>
+    <?php include '../../shared/header.php';?>
     <div style="display: flex; flex-direction: column; width: 100%; justify-content: center; align-items: center;">
         <h2 style="text-align: center; margin-top: 32px;">Procedural Generation</h2>
         <p style="max-width: 512px; word-wrap: normal;">
@@ -24,7 +18,7 @@
             Play with the sliders to get a sense of what does what.
         </p>
         <canvas id="proceduralCanvas" style="width: 512px; height: 512px; background-color: aliceblue;"></canvas>
-        <img id="colourMap" src="../images/colourMap.png" style="display: none; width:8px; height: 8px;">
+        <img id="colourMap" src="/./images/colourMap.png" style="display: none; width:8px; height: 8px;">
         <canvas id="colourCanvas" style="display: none;"></canvas>
         <button onClick="drawPerlin()" style="width: 128px;">Redraw</button>
         <br>
@@ -118,10 +112,10 @@
     </div>
 </body>
 </html>
-<script src="../js/utils.js"></script>
-<script src="../js/canvasUtils.js"></script>
-<script src="../js/perlin.js"></script>
-<script src="../js/proc-gen/colourMap.js"></script>
+<script src="/./js/utils.js"></script>
+<script src="/./js/canvasUtils.js"></script>
+<script src="/./js/perlin.js"></script>
+<script src="/./js/proc-gen/colourMap.js"></script>
 <script>
 
 const gridCount = 64;

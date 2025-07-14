@@ -1,17 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link href="../style.css" rel="stylesheet">
+    <link href="/./style.css" rel="stylesheet">
     <title id="tabTitleQ">Quay</title>
 </head>
 <body class="light">
-    	<div style="width: 100%; display: flex; justify-content: center;">
-		<div style="width: 90%; height: fit-content; display: flex; padding-top: 8px; padding-bottom: 8px; flex-direction: row; justify-content: space-between;">
-			<div style="width: fit-content;">
-				<a href="../index.php">Home</a>
-			</div>
-		</div>
-	</div>
+    <?php include '../../shared/header.php';?>
     <div class="slice">
         <h1>Quay</h1>
     </div>
@@ -25,7 +19,7 @@
     </div>
 </body>
 </html>
-<script src="../js/utils.js"></script>
+<script src="/./js/utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@bnb-chain/reed-solomon/dist/index.aio.js"></script>
 <script>
 

@@ -22,6 +22,7 @@ ctx.imageSmoothingEnabled = false;
 let selectedParticleType = Sand;
 
 let dragging = false;
+let brushSize = 1;
 let mouse = {
     x: 0,
     y: 0,
@@ -60,6 +61,12 @@ canvas.addEventListener("mouseleave", (e) => {
     console.log("Mouse left.");
 })
 
+window.addEventListener("keydown", (e) => {
+    console.log(`Brush size changed to ${brushSize}`);
+    if (e.key === "ArrowUp") brushSize++;
+    if (e.key === "ArrowDown") brushSize = Math.max(0, brushSize - 1);
+});
+
 function getMousePos(e) {
     var rect = canvas.getBoundingClientRect();
     return {
@@ -67,6 +74,27 @@ function getMousePos(e) {
         y: Math.floor((e.y - rect.top))
     };
 }
+
+
+function applyBrush(x, y, tool) {
+    const i0 = Math.floor(x / cellSize);
+    const j0 = Math.floor(y / cellSize);
+    
+    for (let dx = -brushSize; dx <= brushSize; dx++) {
+        for (let dy = -brushSize; dy <= brushSize; dy++) {
+            const di = i0 + dx;
+            const dj = j0 + dy;
+            if (grid.inBounds(di, dj)) {
+                if (tool === "erase") {
+                    grid.set(di, dj, null);
+                } else {
+                    grid.set(di, dj, new selectedParticleType());
+                }
+            }
+        }
+    }
+}
+
 
 function getColourOffset(h, s, l){
     h += Math.random() * 4;
@@ -79,7 +107,8 @@ function getColourOffset(h, s, l){
 const animate = () => {
     ctx.clearRect(0,0,width,height);
     if(dragging){
-        grid.insert(mouse.x, mouse.y, new selectedParticleType());
+        // grid.insert(mouse.x, mouse.y, new selectedParticleType());
+        applyBrush(mouse.x, mouse.y, 'brush');
     }
     requestAnimationFrame(animate);
     grid.update(ctx);

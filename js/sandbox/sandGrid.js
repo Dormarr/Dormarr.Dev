@@ -60,16 +60,6 @@ class SandGrid {
         }
     }
 
-
-    insert(x, y, particle) {
-        const i = Math.floor(x / this.cellSize);
-        const j = Math.floor(y / this.cellSize);
-
-        if (this.isEmpty(i, j)) {
-            this.set(i, j, particle);
-        }
-    }
-
     update(ctx) {
         const nextActive = new Set();
 
@@ -88,7 +78,7 @@ class SandGrid {
                 p.staticFrames = 0;
             } else {
                 p.staticFrames++;
-                if (p.staticFrames >= 10) { // or some threshold
+                if (p.staticFrames >= 320) { // or some threshold
                     p.isStatic = true;
                 }
             }

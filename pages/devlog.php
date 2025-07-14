@@ -13,8 +13,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <link rel="manifest" href="/site.webmanifest">
     </head>
 <body>
+    <?php include '../shared/header.php';?>
+    <div id="msg-box" class="message-container"></div>
     <div style="margin-top: 16px; margin-bottom: -112px">
-        <a href="/../index.php" style="margin-left: 16px;">Back to home</a>
         <pre id="ascii" class="ascii" style="height: 180px; width: 100%; overflow: hidden; color: var(--dim-gray)"></pre>
     </div>
     <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center">
@@ -44,6 +45,41 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 const FPS = 1000/30;
 const userScreen = l("ascii");
 
+const maxMessages = 7;
+const container = l("msg-box");
+
+
+function getNewMessage(){
+    var list=[];
+
+    list.push(choose([
+        `Unhandled Exception: Message too sad.`,
+        `Host your own websites!`,
+        `I did this all myself, are you proud?`,
+        `How long until everything changes?`,
+        `Why has nobody been here?`,
+        `Aren't we so lucky to be alive?`,
+        `Are you still there?`,
+        `Try Tacks!`,
+    ]));
+
+    return choose(list);
+}
+
+function postNewMessage(){
+    // Remove existing "latest" class
+    [...container.children].forEach(child => child.classList.remove("latest"));
+
+    const p = document.createElement("p");
+    p.classList.add("terminal", "latest");
+    p.textContent = getNewMessage();
+
+    container.appendChild(p);
+
+    if(container.children.length > maxMessages){
+        container.removeChild(container.children[0]);
+    }
+}
 
 function renderFrame() {
 
