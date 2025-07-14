@@ -282,7 +282,7 @@ function drawSprite(name, ctx, sprite, x, y, scale, fontSize, lineHeightMult = 1
 	ctx.fillStyle = getColor(COLOURS.ascii);
 	let lineHeight = fontSize * lineHeightMult * scale;
 
-	let animated = (name == "printer") ? true : false;
+	let animated = (name == "printer") ? true : false; // The only animated sprite atm
 
 	for (let i = 0; i < sprite.length; i++) {
 

@@ -157,7 +157,7 @@ button:hover{
     background-color: var(--eerie-black);
     border: 1px solid var(--dim-gray);
     padding: 1rem 1.5rem;
-    margin: 2rem 0;
+    margin: 8px 0px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -185,4 +185,18 @@ button:hover{
 .post-block a.read-more {
     display: inline-block; /* Required for margin to apply properly */
     margin-top: 0.25rem;
+}
+
+.tarot{
+    /* Interaction styling */
+    width: auto;
+    max-width: 256px;
+    height: auto;
+    transition-duration: 0.2s;
+    & .image{
+        width: 100%;
+    }
+}
+.tarot:hover{
+    scale: 1.01;
 }

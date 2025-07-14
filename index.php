@@ -42,8 +42,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="square" style="border: 2px solid maroon;  width: 60%; height: fit-content;">
             <h3>Devlogs</h3>
             <?php foreach ($posts as $post): ?>
-                <?php if ($post['visibility'] !== 'public') continue; ?>
+                <?php if ($post['visibility'] !== 'featured') continue; ?>
                 <article class="post-block">
+                    <!-- <img src="<?= $post['thumbnail_url'] ?>"> -->
                     <h3><?= htmlspecialchars($post['title']) ?></h3>
                     <?php if (!empty($post['subtitle'])): ?>
                         <p class="subtitle"><?= htmlspecialchars($post['subtitle']) ?></p>
@@ -53,6 +54,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <a href="/shared/view.php?slug=<?= urlencode($post['slug']) ?>" class="read-more">Read More</a>
                 </article>
             <?php endforeach; ?>
+            <a href="/../pages/devlog.php">See All</a>
         </div>
         <div class="square" style="border: 2px solid blueviolet; width: 40%; height: fit-content;">
             <img src="../images/PFP.png" width="248px" height="auto" style="max-width: 75%">
@@ -60,7 +62,17 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <p>It's me.</p>
         </div>
     </div>
-
+    <div style="display: flex; flex-direction: row; width: auto; gap: 1rem; padding: 2rem; justify-content: center;">
+        <a class="tarot">
+            <img src="/images/Dormarr_Tarot_Demo.png" class="tarot image">
+        </a>
+        <a class="tarot">
+            <img src="/images/Dormarr_Tarot_Projects.png" class="tarot image">
+        </a>
+        <a class="tarot" href="pages/devlog.php">
+            <img src="/images/Dormarr_Tarot_Devlog.png" class="tarot image">
+        </a>
+    </div>
     <?php include 'shared/footer.php';?>
 </body>
 </html>
@@ -69,6 +81,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script>
 
 const FPS = 1000 / 30;
+const userScreen = l("ascii");
 
 const maxMessages = 7;
 const container = l("msg-box");
@@ -124,7 +137,6 @@ function renderFrame() {
 
     userScreen.textContent = output;
     t += 0.01;
-  
 }
 
 setInterval(renderFrame, FPS);

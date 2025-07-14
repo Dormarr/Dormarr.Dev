@@ -70,7 +70,6 @@ function octavePerlin(x, y, z, octaves, persistence, frequency, amplitude){
 }
 
 const chars = "    ..:oO0@ ";
-const userScreen = l("ascii");
 let t = 0;
 let paused = false;
 
