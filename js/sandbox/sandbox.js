@@ -114,3 +114,9 @@ const animate = () => {
     grid.update(ctx);
 }
 animate();
+
+function staticAnimate(){
+    grid.staticUpdate(ctx);
+}
+
+// setInterval(staticAnimate, 1000);

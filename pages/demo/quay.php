@@ -1,3 +1,8 @@
+<!--
+Title: Quay Code
+Description: A 2D CMYK Matrix Code
+-->
+
 <!DOCTYPE html>
 <html>
 <head>

@@ -10,12 +10,23 @@ class Water extends Particle {
         const downLeft = grid.get(i - 1, j + 1);
         const downRight = grid.get(i + 1, j + 1);
 
-        // Try to fall straight down
-        if (grid.isEmpty(i, j + 1)) {
-            grid.move(i, j, i, j + 1);
-            return;
+        this.velocity = Math.min(this.velocity + 0.2, 4);
+        const fallDistance = Math.floor(this.velocity);
+
+        // Try falling straight down
+        if(!grid.isEmpty(i, j + 1)){
+            grid.get(i, j).velocity = 0;
+        }else{
+            for (let dy = fallDistance; dy >= 1; dy--) {
+                const targetJ = j + dy;
+                if (!grid.inBounds(i, targetJ) || !grid.isEmpty(i, targetJ)) continue;
+    
+                grid.move(i, j, i, targetJ);
+                return;
+            }
         }
 
+        
         // Try diagonally down-left or down-right
         const directions = [
             { dx: -1, dy: 1, cell: downLeft },

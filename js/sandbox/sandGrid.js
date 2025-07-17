@@ -9,6 +9,8 @@ class SandGrid {
         );
 
         this.activeCells = new Set();
+        // Static cells should be rendered in a separate, slower call.
+        this.staticCells = new Set();
     }
 
     inBounds(i, j) {
@@ -54,6 +56,7 @@ class SandGrid {
                 if (neighbor && neighbor.isStatic) {
                     neighbor.isStatic = false;
                     neighbor.staticFrames = 0;
+                    this.staticCells.delete(`${ni},${nj}`);
                     this.activeCells.add(`${ni},${nj}`);
                 }
             }
@@ -62,6 +65,7 @@ class SandGrid {
 
     update(ctx) {
         const nextActive = new Set();
+        const nextStatic = new Set();
 
         const keys = Array.from(this.activeCells);
         keys.sort(() => Math.random() - 0.5);
@@ -90,14 +94,32 @@ class SandGrid {
             for (let j = 0; j < this.rows; j++) {
                 const p = this.grid[i][j];
                 if (p) {
+                    // if(p.isStatic){
+                    //     nextStatic.add(`${i},${j}`);
+                    //     break;
+                    // }
                     ctx.fillStyle = p.color;
                     ctx.fillRect(i * this.cellSize, j * this.cellSize, this.cellSize, this.cellSize);
                     nextActive.add(`${i},${j}`);
                 }
             }
         }
-
+        this.staticCells = nextStatic;
         this.activeCells = nextActive;
+    }
+    
+    staticUpdate(ctx){
+        console.log(`Active Cells: ${this.activeCells.size}, Static Cells: ${this.staticCells.size}`);
+        console.log("Static Update");
+        for (let i = 0; i < this.cols; i++) {
+            for (let j = 0; j < this.rows; j++) {
+                const p = this.grid[i][j];
+                if (p) {
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(i * this.cellSize, j * this.cellSize, this.cellSize, this.cellSize);
+                }
+            }
+        }
     }
 
 }

@@ -1,3 +1,8 @@
+<!--
+Title: Tacks
+Description: A cheeky little idle clicker.
+-->
+
 <!DOCTYPE html>
 <html lang="en-UK">
 <head>

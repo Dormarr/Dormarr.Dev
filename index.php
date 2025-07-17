@@ -21,24 +21,24 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <a href="pages/demo/quay.php">> Quay <</a>
         </div>
         <div>
-            <a href="pages/projects/tacks.html">> Tacks <</a>
+            <a href="pages/projects/tacks.php">> Tacks <</a>
         </div>
         <div>
-            <a href="pages/demo/particles.php">> Particles <</a>
+            <a href="pages/projects/particles.php">> Particles <</a>
         </div>
     </div>
     <div class="line"></div>
-    <p>I still need to link demo and projects, but it's coming along :)</p>
+    <p>I still need to link demo and design the projects page, but it's coming along :)</p>
     <div style="height: 192px;"></div>
     <div style="display: flex; flex-direction: row; width: 100%; gap: 8%; justify-content: center;">
-        <a class="tarot left">
-            <img src="/images/Dormarr_Tarot_Demo.png" class="tarot image">
+        <a class="tarot left" href="pages/demo.php">
+            <img src="/images/Dormarr_Tarot_Demo.png" class="image">
         </a>
-        <a class="tarot middle">
-            <img src="/images/Dormarr_Tarot_Projects.png" class="tarot image">
+        <a class="tarot middle" href="pages/projects.php">
+            <img src="/images/Dormarr_Tarot_Projects.png" class="image">
         </a>
         <a class="tarot right" href="pages/devlog.php">
-            <img src="/images/Dormarr_Tarot_Devlog.png" class="tarot image">
+            <img src="/images/Dormarr_Tarot_Devlog.png" class="image">
         </a>
     </div>
     <div style="height: 192px;"></div>

@@ -1,3 +1,9 @@
+<!--
+Title: Procedural Generation
+Description: Perlin generated terrain with data driven pixel art
+-->
+
+
 <!DOCTYPE html>
 <html>
 <head>

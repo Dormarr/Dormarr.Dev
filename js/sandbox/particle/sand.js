@@ -3,23 +3,31 @@ class Sand extends Particle {
         super('sand', getColourOffset(40, 63, 72), 'solid');
     }
 
+
+    /* =========================================
+    Bugs
+    - Water pushed up diagonal sand dunes.
+    - Larger mounds don't update properly due to update delay.
+    - Checkerboard sand under water.
+
+    ========================================= */
     update(grid, i, j) {
         this.velocity = Math.min(this.velocity + 0.2, 4);
         const fallDistance = Math.floor(this.velocity);
 
-        // Try falling straight down
         for (let dy = 1; dy <= fallDistance; dy++) {
             const targetJ = j + dy;
-            if (!grid.inBounds(i, targetJ)) break;
+            if (!grid.inBounds(i, targetJ) || !grid.isEmpty(i, targetJ)) continue;
 
             const below = grid.get(i, targetJ);
 
             // Empty or liquid = sink
-            if (!below || below.isLiquid?.()) {
+            if (!below || below.isLiquid?.() && this.velocity > 0 ) {
                 // If it's a liquid, displace it upward
                 if (below && below.isLiquid()) {
                     grid.set(i, targetJ, this);
                     grid.set(i, j, below);
+
                 } else {
                     grid.move(i, j, i, targetJ);
                 }

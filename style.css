@@ -192,25 +192,66 @@ button:hover{
 
 .tarot {
     max-width: 256px;
+    width: 25%;
+    position: relative;
+    overflow: hidden;
     transition: transform 0.4s ease, box-shadow 0.4s ease;
     transform-style: preserve-3d;
     will-change: transform;
     box-shadow: none;
-    position: relative;
-    overflow: hidden;
 }
 
 .tarot .image {
     width: 100%;
     display: block;
+    position: relative;
+    z-index: 1;
 }
 
-/* Base hover glow */
-.tarot:hover {
+.tarot::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -250%;
+    width: 400%;
+    height: 300%;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 230, 248, 0) 5%,
+        rgba(129, 173, 255, 0.1) 20%,
+        rgba(255, 130, 224, 0.25) 40%,
+        rgba(255, 210, 114, 0.25) 60%,
+        rgba(255, 116, 169, 0.1) 70%,
+        rgba(196, 224, 255, 0) 90%
+    );
+    transform: rotate(40deg);
+    opacity: 0;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 2;
+    animation: none;
+}
+
+.tarot:hover::before {
+    animation: sheenMove 1.7s forwards;
+    opacity: 0.4;
+}
+
+@keyframes sheenMove {
+    0% {
+        top: -150%;
+        left: -200%;
+    }
+    100% {
+        top: 150%;
+        left: 150%;
+    }
+}
+
+.tarot .image:hover {
     box-shadow: 0 15px 30px rgba(255, 255, 255, 0.4), 0 0 30px rgba(255, 255, 255, 0.25);
 }
 
-/* Directional tilts */
 .tarot.left:hover {
     transform: scale(1.05) rotateY(6deg) rotateX(4deg) rotateZ(-2deg);
 }
@@ -224,6 +265,8 @@ button:hover{
 }
 
 
+
+
 .tiled-header {
     pointer-events: none;
     position: relative;
@@ -234,4 +277,33 @@ button:hover{
     background-size: auto 400px; /* Maintain the height, auto width */
     margin-bottom: -160px;
     z-index: 10;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.project-card {
+  display: block;
+  border-radius: 12px;
+  padding: 1rem;
+  text-decoration: none;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 6px rgba(0,0,0,0.3);
+}
+
+.project-card img {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  object-fit: cover;
+  aspect-ratio: 16/9;
 }
