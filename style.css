@@ -191,8 +191,7 @@ button:hover{
 }
 
 .tarot {
-    max-width: 256px;
-    width: 25%;
+    width: 256px;
     position: relative;
     overflow: hidden;
     transition: transform 0.4s ease, box-shadow 0.4s ease;
@@ -280,30 +279,80 @@ button:hover{
 }
 
 .projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  padding: 2rem;
+    width: 80%;
+    max-width: 512px;
+    justify-items: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 2rem;
 }
 
 .project-card {
-  display: block;
-  border-radius: 12px;
-  padding: 1rem;
-  text-decoration: none;
-  box-shadow: 0 4px 4px rgba(0,0,0,0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    display: block;
+    border-radius: 12px;
+    padding: 1rem;
+    text-decoration: none;
+    border: 1px solid var(--burnt-sienna);
+    box-shadow: 0 4px 4px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .project-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 6px rgba(0,0,0,0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 6px rgba(0,0,0,0.3);
 }
 
 .project-card img {
-  width: 100%;
-  border-radius: 8px;
-  margin-bottom: 0.75rem;
-  object-fit: cover;
-  aspect-ratio: 16/9;
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    object-fit: cover;
+    aspect-ratio: 16/9;
+}
+
+.box{
+    /* background-color: #0f7cc9; */
+    /* box-shadow: 0 2px 0px rgba(255,255,255,0.3); */
+    border: 1px solid var(--dim-gray);
+    border-radius: 1em;
+    overflow: hidden;
+}
+
+
+.bento-container{
+    display: grid;
+    grid-auto-columns: 256px;
+    grid-auto-rows: 1fr;
+    gap: 1.5em;
+    grid-template-areas:
+    "box-1 box-4 box-3"
+    "box-1 box-2 box-3"
+    "box-5 box-2 box-6";
+}
+
+@media(max-width: 96em){
+    .bento-container{
+        border: 1px solid yellow;
+        align-self: center;
+        grid-template-areas:
+        "box-1 box-4 box-3"
+        "box-1 box-2 box-3"
+        "box-5 box-2 box-6";
+    }
+}
+
+@media(max-width: 56em){
+    .bento-container{
+        border: 1px solid red;
+        width: 532px;
+        align-self: center;
+        grid-template-areas:
+            "box-1 box-4"
+            "box-1 box-2"
+            "box-3 box-2"
+            "box-3 box-5";
+        
+    }
 }

@@ -14,6 +14,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </head>
 <body>
     <?php include '../shared/header.php';?>
+    <a style="position: absolute; top: 16px; right: 32px;" href="../admin/admin-posts.php">Admin</a>
     <div id="msg-box" class="message-container"></div>
     <div style="margin-top: 16px; margin-bottom: -112px">
         <pre id="ascii" class="ascii" style="height: 180px; width: 100%; overflow: hidden; color: var(--dim-gray)"></pre>

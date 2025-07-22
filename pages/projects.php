@@ -36,16 +36,17 @@ function extractMeta($filePath) {
 <body>
   <?php include '../shared/header.php';?>
     <div style="display: flex; flex-direction: column; width: 100%; justify-content: center; align-items: center;">
-      <div class="projects-grid">
-        <?php foreach ($projectFiles as $file): 
-          $meta = extractMeta($file); ?>
-          <a href="projects/<?= htmlspecialchars($meta['link']) ?>" class="project-card">
-            <!-- <img src="<?= htmlspecialchars($meta['image']) ?>" alt="<?= htmlspecialchars($meta['title']) ?>"> -->
-            <h2><?= htmlspecialchars($meta['title']) ?></h2>
-            <p><?= htmlspecialchars($meta['description']) ?></p>
-          </a>
-        <?php endforeach; ?>
-      </div>
+        <h2>Projects</h2>
+        <div class="projects-grid">
+          <?php foreach ($projectFiles as $file): 
+            $meta = extractMeta($file); ?>
+            <a href="projects/<?= htmlspecialchars($meta['link']) ?>" class="project-card">
+              <!-- <img src="<?= htmlspecialchars($meta['image']) ?>" alt="<?= htmlspecialchars($meta['title']) ?>"> -->
+              <h3><?= htmlspecialchars($meta['title']) ?></h3>
+              <p><?= htmlspecialchars($meta['description']) ?></p>
+            </a>
+          <?php endforeach; ?>
+        </div>
     </div>
 </body>
 </html>
