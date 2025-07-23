@@ -68,7 +68,14 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="box" style="grid-area: box-6; padding: 16px;">
                 <p>Perlin</p>
             </div>
+            <div class="box" style="grid-area: box-7;">
+                <p>Stats</p>
+            </div>
+            <div class="box" style="grid-area: box-8; padding: 16px;">
+                <p>Not sure what to do here.</p>
+            </div>
          </div>
+         <div id="lang-stats">Loading...</div>
     </div>
     <hr>
     <div style="display: flex; flex-direction: row; width: 100%; justify-content: center; margin: 64px 0px; gap: 64px">
@@ -122,5 +129,44 @@ function updateTime(){
 }
 
 setInterval(updateTime, 1000);
+
+
+fetch('/public/github_stats.php') // adjust path if needed
+  .then(response => response.json())
+  .then(data => {
+    const container = document.getElementById('lang-stats');
+
+    if (!data.languages) {
+      container.textContent = "Error: No language data available.";
+      return;
+    }
+
+    const languages = data.languages;
+    const totalBytes = Object.values(languages).reduce((sum, val) => sum + val, 0);
+    
+    // Sort languages by size
+    const sorted = Object.entries(languages).sort((a, b) => b[1] - a[1]);
+
+    // Build output
+    let output = "<h3>📊 GitHub Language Breakdown</h3><ul>";
+    for (const [lang, size] of sorted) {
+      const percent = ((size / totalBytes) * 100).toFixed(1);
+      output += `<li><strong>${lang}</strong>: ${size.toLocaleString()} bytes (${percent}%)</li>`;
+    }
+    output += "</ul>";
+
+    // Optional timestamp
+    if (data.timestamp) {
+      const date = new Date(data.timestamp * 1000);
+      output += `<p><small>Last updated: ${date.toLocaleString()}</small></p>`;
+    }
+
+    container.innerHTML = output;
+  })
+  .catch(err => {
+    document.getElementById('lang-stats').textContent = "Failed to load stats.";
+    console.error("GitHub stats error:", err);
+  });
+
 
 </script>
