@@ -493,7 +493,7 @@ function openUpdate(){
 }
 
 async function loadChangelog(){
-	const response = await fetch('../files/tacks/changelog.json');
+	const response = await fetch('/../files/tacks/changelog.json');
 	const data = await response.json();
 	return data;
 }

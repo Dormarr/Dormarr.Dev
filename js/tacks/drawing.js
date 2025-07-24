@@ -306,7 +306,7 @@ function populateSprite(name, count, sprite, canvas, collection, animated, pb = 
 	
 	for (let i = 0; i < count; i++) {
 		spr = animated ? sprite[0] : sprite[Math.floor(Math.random() * sprite.length)];
-		const {x: X, y:Y} = getValidPosition(canvas, exclusion, pb, pt, pl, pr)
+		const {x: X, y:Y} = getValidPosition(canvas, exclusion, pb, pt, pl, pr);
 		collection.push({
 			homeX: X,
 			homeY: Y,

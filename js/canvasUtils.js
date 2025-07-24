@@ -22,3 +22,17 @@ function mark(ctx, x, y, colour, squareSize){
     ctx.fillStyle = colour;
     ctx.fillRect(x * squareSize, y * squareSize, squareSize + 1, squareSize + 1);
 }
+
+function getValidPosition(canvas, exclusion, pb = 0, pt = 0, pl = 0, pr = 0){
+	let x, y;
+    do {
+       	x = Math.random() * (canvas.width - 80);
+       	y = Math.random() * (canvas.height - 20);
+    } while (
+        x > exclusion.x + pl &&
+        x < exclusion.x + exclusion.width - pr &&
+        y > exclusion.y + pt &&
+        y < exclusion.y + exclusion.height - pb
+    );
+    return { x, y };
+}

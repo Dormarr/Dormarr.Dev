@@ -1,7 +1,58 @@
 {
-  "JavaScript": 43157,
-  "PHP": 37759,
-  "Hack": 26900,
-  "CSS": 11171,
-  "HTML": 3308
+    "timestamp": "2025-07-24T20:30:20+00:00",
+    "totalBytes": 1761716,
+    "languages": [
+        {
+            "name": "C#",
+            "bytes": 1378736
+        },
+        {
+            "name": "JavaScript",
+            "bytes": 102787
+        },
+        {
+            "name": "HTML",
+            "bytes": 71640
+        },
+        {
+            "name": "Java",
+            "bytes": 68893
+        },
+        {
+            "name": "PHP",
+            "bytes": 39549
+        },
+        {
+            "name": "CSS",
+            "bytes": 31694
+        },
+        {
+            "name": "TypeScript",
+            "bytes": 27120
+        },
+        {
+            "name": "Hack",
+            "bytes": 26900
+        },
+        {
+            "name": "Lua",
+            "bytes": 7579
+        },
+        {
+            "name": "Python",
+            "bytes": 4529
+        },
+        {
+            "name": "Svelte",
+            "bytes": 1402
+        },
+        {
+            "name": "GLSL",
+            "bytes": 798
+        },
+        {
+            "name": "Batchfile",
+            "bytes": 89
+        }
+    ]
 }

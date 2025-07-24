@@ -34,3 +34,24 @@ function closeL(el){
 		console.warn(e);
 	}
 }
+
+function getContrastColor(hexColor) {
+	// Remove leading hash if present
+	hexColor = hexColor.replace(/^#/, '');
+
+	// Expand shorthand (e.g. #abc -> #aabbcc)
+	if (hexColor.length === 3) {
+		hexColor = hexColor.split('').map(c => c + c).join('');
+	}
+
+	// Parse RGB values
+	const r = parseInt(hexColor.substr(0, 2), 16);
+	const g = parseInt(hexColor.substr(2, 2), 16);
+	const b = parseInt(hexColor.substr(4, 2), 16);
+
+	// Calculate relative luminance
+	const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+
+	// Threshold of 128 is a common cutoff
+	return luminance > 128 ? 'dark' : 'light';
+}

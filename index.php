@@ -28,54 +28,38 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
     <div class="line"></div>
-    <!-- <p>I still need to spruce up the projects and demos pages, but it's coming along :)</p>
-    <div style="height: 192px;"></div>
-    <div style="display: flex; flex-direction: row; width: 100%; gap: 8%; justify-content: center;">
-        <a class="tarot left" href="pages/demo.php">
-            <img src="/images/Dormarr_Tarot_Demo.png" class="image">
-        </a>
-        <a class="tarot middle" href="pages/projects.php">
-            <img src="/images/Dormarr_Tarot_Projects.png" class="image">
-        </a>
-        <a class="tarot right" href="pages/devlog.php">
-            <img src="/images/Dormarr_Tarot_Devlog.png" class="image">
-        </a>
-    </div>
-    <div style="height: 192px;"></div>
-    <hr> -->
     <div style="padding: 64px 0px; width: 100%; height: fit-content; display: flex; align-items: center; justify-content: center;">
         <!-- Bento -->
          <div class="bento-container">
-            <a class="tarot left box" style="grid-area: box-1;" href="pages/demo.php">
+            <a class="tarot left box" style="grid-area: box-1; border: 0;" href="pages/demo.php">
                 <img src="/images/Dormarr_Tarot_Demo.png" class="image">
             </a>
-            <a class="tarot middle box" style="grid-area: box-2" href="pages/projects.php">
+            <a class="tarot middle box" style="grid-area: box-2; border: 0;" href="pages/projects.php">
                 <img src="/images/Dormarr_Tarot_Projects.png" class="image">
             </a>
-            <a class="tarot right box" style="grid-area: box-3" href="pages/devlog.php">
+            <a class="tarot right box" style="grid-area: box-3; border: 0;" href="pages/devlog.php">
                 <img src="/images/Dormarr_Tarot_Devlog.png" class="image">
             </a>
             <div class="box" style="grid-area: box-4; padding: 16px;">
                 <p style="font-size: 14px;">Current time (UTC): <span id="bentoTimeLbl">tick 0</span></p>
                 <p>Up time: <span id="bentoUpTimeLbl"></span></p>
             </div>
-            <div class="box" style="grid-area: box-5; padding: 16px;">
-                <div style="display: flex; flex-direction: column; align-items: center; justify-items: center;">
+            <div class="box" style="grid-area: box-5; overflow: hidden; position: relative;">
+                <div style="display: flex; flex-direction: column; height: 100%; align-items: center; justify-content: center;">
                     <label style="font-size: 24px;" id="tacksLbl">0</label>
                     <button id="miniTacksBtn">Tacks!</button>
                 </div>
+                <canvas id="tacksCanvas" style="margin: 0px; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></canvas>
             </div>
-            <div class="box" style="grid-area: box-6; padding: 16px;">
-                <p>Perlin</p>
+            <div class="box" style="grid-area: box-6; overflow: hidden;">
+                <div id="ascii-widget" style="background-color: #171717; white-space: pre;"></div>
             </div>
-            <div class="box" style="grid-area: box-7;">
-                <p>Stats</p>
+            <div class="box" id="github-stats" style="grid-area: box-7;">
             </div>
             <div class="box" style="grid-area: box-8; padding: 16px;">
-                <p>Not sure what to do here.</p>
+                <p>Not sure what to do here.<br>Maybe the devlogs.</p>
             </div>
          </div>
-         <div id="lang-stats">Loading...</div>
     </div>
     <hr>
     <div style="display: flex; flex-direction: row; width: 100%; justify-content: center; margin: 64px 0px; gap: 64px">
@@ -107,6 +91,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </html>
 <script src="../js/utils.js"></script>
 <script src="../js/perlin.js"></script>
+<script src="../js/github_stats.js"></script>
 <script>
 
 const uptimeLbl = l("bentoTimeLbl");
@@ -114,12 +99,49 @@ const tacksLbl = l("tacksLbl");
 
 l("miniTacksBtn").addEventListener('click', context => { doTack() });
 
+const tackSymbol = [
+  " Π ",
+  " T "
+];
 
-function doTack(){
+
+let activeTacks = [];
+const tackCanvas = l("tacksCanvas");
+const tackCtx = tackCanvas.getContext("2d");
+const lineHeight = 7;
+const speed = 3; // pixels per frame
+
+function doTack() {
     let i = parseInt(tacksLbl.textContent);
     i++;
     tacksLbl.textContent = i;
+
+    const x = Math.random() * tackCanvas.getBoundingClientRect().width;
+    activeTacks.push({ x, y: -20 });
 }
+
+function animateTacks() {
+    tackCtx.clearRect(0, 0, tackCanvas.width, tackCanvas.height);
+
+    for (let i = 0; i < activeTacks.length; i++) {
+        const tack = activeTacks[i];
+
+        tackCtx.font = `14px monospace`;
+        tackCtx.textBaseline = "top";
+        tackCtx.fillStyle = '#ffffff';
+
+        for (let j = 0; j < tackSymbol.length; j++) {
+            tackCtx.fillText(tackSymbol[j], tack.x, tack.y + j * lineHeight);
+        }
+        tack.y += speed;
+    }
+    
+    activeTacks = activeTacks.filter(t => t.y < tackCanvas.height);
+
+    requestAnimationFrame(animateTacks);
+}
+
+animateTacks();
 
 
 let i = 0;
@@ -130,43 +152,28 @@ function updateTime(){
 
 setInterval(updateTime, 1000);
 
+const asciiWidget = l("ascii-widget");
 
-fetch('/public/github_stats.php') // adjust path if needed
-  .then(response => response.json())
-  .then(data => {
-    const container = document.getElementById('lang-stats');
+function renderAscii() {
 
-    if (!data.languages) {
-      container.textContent = "Error: No language data available.";
-      return;
+    let output = "";
+    const width = asciiWidget.clientWidth / 6;
+
+    if(width == 0) console.log("Issue with width of Perlin ASCII at index.php");
+    const height = 12;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const value = perlin(x * 0.1, y * 0.1, t);
+        output += mapValueToChar(value);
+      }
+      output += "\n";
     }
 
-    const languages = data.languages;
-    const totalBytes = Object.values(languages).reduce((sum, val) => sum + val, 0);
-    
-    // Sort languages by size
-    const sorted = Object.entries(languages).sort((a, b) => b[1] - a[1]);
+    asciiWidget.textContent = output;
+    t += 0.01;
+}
 
-    // Build output
-    let output = "<h3>📊 GitHub Language Breakdown</h3><ul>";
-    for (const [lang, size] of sorted) {
-      const percent = ((size / totalBytes) * 100).toFixed(1);
-      output += `<li><strong>${lang}</strong>: ${size.toLocaleString()} bytes (${percent}%)</li>`;
-    }
-    output += "</ul>";
-
-    // Optional timestamp
-    if (data.timestamp) {
-      const date = new Date(data.timestamp * 1000);
-      output += `<p><small>Last updated: ${date.toLocaleString()}</small></p>`;
-    }
-
-    container.innerHTML = output;
-  })
-  .catch(err => {
-    document.getElementById('lang-stats').textContent = "Failed to load stats.";
-    console.error("GitHub stats error:", err);
-  });
-
+setInterval(renderAscii, 1000/30);
 
 </script>
