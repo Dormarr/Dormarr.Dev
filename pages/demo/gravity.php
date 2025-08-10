@@ -17,27 +17,68 @@ Description: Exploring gravitation equations.
         <br>
         <div class="slice" style="align-items: center; flex-direction: column; gap: 8px;">
             <p>Just some experiments with gravity simultion...</p>
-            <canvas id="orbitCanvas" width="800" height="500" style="border: 1px solid var(--cosmic-latte); margin: 0; padding: 0;"></canvas>
+            <p>I'll add some customisation stuff to make it more interactive.</p>
+            <div class="sim-container">
+                <canvas class="orbitCanvas" id="orbitCanvas" height="500" width="800"></canvas>
+                <canvas class="orbitCanvas" id="bodyCanvas" height="500" width="800" style="pointer-events: none;"></canvas>
+            </div>
+            <pre id="statsLbl">Stats</pre>
             <pre id="mousePosLbl" style="margin: 0; padding: 0;">Mouse Pos: 0, 0</pre>
             <button onclick="togglePause()" id="pauseBtn">Pause</button>
         </div>
     </body>
 </html>
+<style>
+.sim-container{
+    position: relative;
+    width: 800px;
+    height: 500px;
+}
+.orbitCanvas{
+    width: 800px;
+    height: 500px;
+    border: 1px solid var(--cosmic-latte);
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 0;
+}
+</style>
 <script src="/./js/utils.js"></script>
 <script>
 
 // The 2D Orbit code.
 
+// Add interatable stuff, custom settings etc.
+
 let paused = false;
+
+const statsLbl = l("statsLbl");
 
 const mousePosLbl = l("mousePosLbl");
 const orbitCanvas = l("orbitCanvas");
 const orbitCtx = orbitCanvas.getContext('2d');
+
+const bodyCanvas = l("bodyCanvas");
+const bodyCtx = bodyCanvas.getContext('2d');
+
 let mousePos;
 
 orbitCanvas.addEventListener('mousemove', function(e){
     getMousePos(orbitCanvas, e);
-    mousePosLbl.textContent = `Mouse Pos: ${mousePos.x}, ${mousePos.y}`;
+    const phys = pxToPhys(mousePos.x, mousePos.y);
+    mousePosLbl.textContent = `Mouse Pos: ${mousePos.x}, ${mousePos.y} \nPhys Pos: ${phys.x}, ${phys.y}`;
+})
+
+orbitCanvas.addEventListener('click', function(e){
+    getMousePos(orbitCanvas, e);
+    const phys = pxToPhys(mousePos.x, mousePos.y);
+    createLight(phys.x, phys.y);
+})
+
+document.addEventListener('DOMContentLoaded', function(){
+    statsLbl.textContent = `M/P: ${metersPerPixel.toString()}`;
 })
 
 function getMousePos(canvas, e){
@@ -47,71 +88,166 @@ function getMousePos(canvas, e){
     mousePos = { x, y };
 }
 
-const G = 6.67430e-3;
+function physToPx(xm, ym){
+    return { x: xm / metersPerPixel, y: ym / metersPerPixel};
+}
+
+function pxToPhys(xpx, ypx){
+    return { x: xpx * metersPerPixel, y: ypx * metersPerPixel};
+}
+
+function drawBodyRadiusPx(physRm){
+    return Math.max(physRm / metersPerPixel, minRadPx);
+}
+
+const metersPerPixel = 1e6; // Comes to 1,000km per pixel
+const G = 6.67430e-11; // Gravitational Constant
+const c = 2.998e8; // Speed of light
+const dt = 1e-3;
+const epsilon = 1e4; // I don't use this either.
+
+const minRadPx = 4;
 
 let particles = [];
 let bodies = [];
 
-function createBody(x, y, r, m){
-    bodies.push({x, y, r, m});
-    orbitCtx.beginPath();
-    orbitCtx.arc(x, y, r, 0, 360);
-    orbitCtx.fillStyle = 'coral';
-    orbitCtx.fill();
+function createBody(x_m, y_m, r_m, m_kg, vx = 0, vy = 0){
+    bodies.push({ x_m, y_m, r_m, m_kg, vx, vy});
 }
 
-function createLight(){
-    const rayCount = 24;
-
-    const s = 2;
-    const m = 0;
+function createSpawnLights(){
+    const rayCount = 48;
 
     for(i = 0; i < rayCount; i++){
-        const y = orbitCanvas.height / rayCount * i + (orbitCanvas.height / rayCount) / 2;
-        const x = 0;
-        const phi = 0;
-        const sx = 0;
-        const sy = 0;
-        particles.push({ x, y, s, m, sx, sy})
+        createLight(0, (orbitCanvas.height / rayCount * i + (orbitCanvas.height / rayCount) / 2) * metersPerPixel);
     }
+}
+
+function createLight(x, y){
+    const x_m = x;
+    const y_m = y;
+    const vx = c;
+    const vy = 0;
+    particles.push({ x_m, y_m, vx, vy})
+
 }
 
 function stepParticles(){
     if(paused) return;
-    particles = particles.filter(p => p.x < orbitCanvas.width);
-    // Particle behaviour
-    particles.forEach(p =>{
+    particles = particles.filter(p => {
+        // Particle behaviour
+        if(p.x_m / metersPerPixel < 0 || p.x_m / metersPerPixel > orbitCanvas.width){
+            return false;
+        }
+
+        let ax = 0, ay = 0;
+        let collided = false;
+
         bodies.forEach(b => {
-            const dx = b.x - p.x;
-            const dy = b.y - p.y;
-            const distSq = dx * dx + dy * dy;
+            const dx = b.x_m - p.x_m;
+            const dy = b.y_m - p.y_m;
+            const distSq = dx*dx + dy*dy + epsilon*epsilon;
             const dist = Math.sqrt(distSq);
-
-            if(dist > b.r){
-                const a = G * b.m / distSq; // Acceleration magnitude
-                const ax = a * (dx / dist);
-                const ay = a * (dy / dist);
-
-                p.sx = (p.sx || p.s) + ax;
-                p.sy = (p.sy || 0) + ay;
+            const a = G * b.m_kg / distSq;
+            ax += a * (dx / dist);
+            ay += a * (dy / dist);
+            if(dist <= b.r_m){
+                collided = true;
             }
-
-            // p.phi = Math.atan2(dx,dy);
-            // p.phi += -2 / 1 * dx;
         });
-        p.x += p.sx;
-        p.y += p.sy;
+
+        if(collided) return false;
+
+        p.vx += Math.min(ax * dt, c);
+        p.vy += Math.min(ay * dt, c);
+        p.x_m += p.vx * dt;
+        p.y_m += p.vy * dt;
+
+        return true;
     });
 }
 
-function renderParticles(){
+function stepBodies(){
     if(paused) return;
-    particles.forEach(p =>{
+    bodies.forEach(b => {
+        let ax = 0; ay = 0;
+        bodies.forEach(b2 => {
+            if(b === b2) return;
+            const dx = b2.x_m - b.x_m;
+            const dy = b2.y_m - b.y_m;
+            const distSq = dx*dx + dy*dy + epsilon*epsilon;
+            const dist = Math.sqrt(distSq);
+            const a = G * b2.m_kg / distSq;
+            ax += a * (dx / dist);
+            ay += a * (dy / dist);
+            
+            handleCollisions();
+            
+        });
+        b.vx += ax * dt;
+        b.vy += ay * dt;
+    });
+    
+    bodies.forEach(b => {
+        b.x_m += b.vx * dt;
+        b.y_m += b.vy * dt;    
+    });
+    // handleCollisions();
+}
+
+function handleCollisions() {
+    for (let i = 0; i < bodies.length; i++) {
+        for (let j = i + 1; j < bodies.length; j++) {
+            const b1 = bodies[i];
+            const b2 = bodies[j];
+            const dx = b2.x_m - b1.x_m;
+            const dy = b2.y_m - b1.y_m;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if (dist <= b1.r_m + (b2.r_m / 2)) {
+                const totalMass = b1.m_kg + b2.m_kg;
+                const newX = (b1.x_m * b1.m_kg + b2.x_m * b2.m_kg) / totalMass;
+                const newY = (b1.y_m * b1.m_kg + b2.y_m * b2.m_kg) / totalMass;
+                const newVx = (b1.vx * b1.m_kg + b2.vx * b2.m_kg) / totalMass;
+                const newVy = (b1.vy * b1.m_kg + b2.vy * b2.m_kg) / totalMass;
+                const newRadius = Math.cbrt( Math.pow(b1.r_m,3) + Math.pow(b2.r_m,3) );
+
+                // replace b1 with merged and remove b2
+                bodies[i] = {
+                    x_m: newX, y_m: newY, r_m: newRadius,
+                    m_kg: totalMass, vx: newVx, vy: newVy
+                };
+                bodies.splice(j, 1);
+                j--;
+            }
+        }
+    }
+}
+
+function fadeCanvas(){
+    orbitCtx.fillStyle = "rgba(0, 0, 0, 0.01)";
+    orbitCtx.fillRect(0,0,orbitCanvas.width, orbitCanvas.height);
+    bodyCtx.clearRect(0,0,bodyCanvas.width, bodyCanvas.height);
+}
+
+function render(){
+    fadeCanvas();
+
+    for(const b of bodies){
+        const p = physToPx(b.x_m, b.y_m);
+        bodyCtx.beginPath();
+        bodyCtx.arc(p.x, p.y, drawBodyRadiusPx(b.r_m), 0, Math.PI*2);
+        bodyCtx.fillStyle = 'coral';
+        bodyCtx.fill();
+    }
+
+    for(const p of particles){
+        const pos = physToPx(p.x_m, p.y_m)
         orbitCtx.beginPath();
-        orbitCtx.arc(p.x, p.y, 0.5,0,360);
+        orbitCtx.arc(pos.x, pos.y, 0.25,0,360);
         orbitCtx.fillStyle = 'white';
         orbitCtx.fill();
-    })
+    }
 }
 
 function togglePause(){
@@ -119,11 +255,16 @@ function togglePause(){
     l("pauseBtn").textContent = paused ? "Play" : "Pause";
 }
 
-// createBody(550, 250, 12.742, 5.972e24); // Earth
-createBody(550, 250, 50, 21.552e4);
-createLight();
+// createBody(550e6, 250e6, 6.371e6, 5.972e24); // Earth
+// createBody(250e6, 200e6, 6.371e7, 8e34); // Earth 2
+// createBody(550e6, 250e6, 6.371e6, 1e36); // Earth 2
+createBody(400e6, 400e6, 2e7, 8e34, -7e7, -6e5); // Earth 2
+createBody(500e6, 200e6, 2e7, 8e34, 7e7, 6.219e5); // Earth 2
+// createBody(550, 250, 50, 21.552e4);
+createSpawnLights();
 
-setInterval(stepParticles, 20);
-setInterval(renderParticles, 1);
+setInterval(stepBodies, dt);
+setInterval(stepParticles, dt);
+setInterval(render, 8);
 
 </script>
