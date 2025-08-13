@@ -1,6 +1,7 @@
 <!--
 Title: Gravity
 Description: Exploring gravitation equations.
+Image: /./images/patches/Dormarr_Patch_Gravity.png
 -->
 
 <!DOCTYPE html>
@@ -16,8 +17,10 @@ Description: Exploring gravitation equations.
         </div>
         <br>
         <div class="slice" style="align-items: center; flex-direction: column; gap: 8px;">
-            <p>Just some experiments with gravity simultion...</p>
-            <p>I'll add some customisation stuff to make it more interactive.</p>
+            <pre>
+Just some experiments with gravity simulations...
+I need to add some customisations and fix the jolt on body collision.
+            </pre>
             <div class="sim-container">
                 <canvas class="orbitCanvas" id="orbitCanvas" height="500" width="800"></canvas>
                 <canvas class="orbitCanvas" id="bodyCanvas" height="500" width="800" style="pointer-events: none;"></canvas>
@@ -104,7 +107,7 @@ const metersPerPixel = 1e6; // Comes to 1,000km per pixel
 const G = 6.67430e-11; // Gravitational Constant
 const c = 2.998e8; // Speed of light
 const dt = 1e-3;
-const epsilon = 1e4; // I don't use this either.
+const epsilon = 1e4;
 
 const minRadPx = 4;
 
@@ -116,7 +119,7 @@ function createBody(x_m, y_m, r_m, m_kg, vx = 0, vy = 0){
 }
 
 function createSpawnLights(){
-    const rayCount = 48;
+    const rayCount = 72;
 
     for(i = 0; i < rayCount; i++){
         createLight(0, (orbitCanvas.height / rayCount * i + (orbitCanvas.height / rayCount) / 2) * metersPerPixel);
@@ -192,7 +195,6 @@ function stepBodies(){
         b.x_m += b.vx * dt;
         b.y_m += b.vy * dt;    
     });
-    // handleCollisions();
 }
 
 function handleCollisions() {
@@ -250,6 +252,11 @@ function render(){
     }
 }
 
+function step(){
+    stepBodies();
+    stepParticles();
+}
+
 function togglePause(){
     paused = paused ? false : true;
     l("pauseBtn").textContent = paused ? "Play" : "Pause";
@@ -257,14 +264,13 @@ function togglePause(){
 
 // createBody(550e6, 250e6, 6.371e6, 5.972e24); // Earth
 // createBody(250e6, 200e6, 6.371e7, 8e34); // Earth 2
-// createBody(550e6, 250e6, 6.371e6, 1e36); // Earth 2
-createBody(400e6, 400e6, 2e7, 8e34, -7e7, -6e5); // Earth 2
-createBody(500e6, 200e6, 2e7, 8e34, 7e7, 6.219e5); // Earth 2
-// createBody(550, 250, 50, 21.552e4);
+// createBody(550e6, 250e6, 6.371e6, 2e36); // Earth 2
+
+createBody(400e6, 400e6, 2e7, 8e34, -7e7, -6e5); // Orbitter 1
+createBody(500e6, 200e6, 2e7, 8e34, 7e7, 6.219e5); // Orbitter 2
 createSpawnLights();
 
-setInterval(stepBodies, dt);
-setInterval(stepParticles, dt);
-setInterval(render, 8);
+setInterval(step, dt);
+setInterval(render, 1);
 
 </script>

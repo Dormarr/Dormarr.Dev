@@ -42,9 +42,11 @@ function extractMeta($filePath) {
             <?php foreach ($projectFiles as $file): 
             $meta = extractMeta($file); ?>
             <a href="demo/<?= htmlspecialchars($meta['link']) ?>" class="project-card">
-                <!-- <img src="<?= htmlspecialchars($meta['image']) ?>" alt="<?= htmlspecialchars($meta['title']) ?>"> -->
-                <h3><?= htmlspecialchars($meta['title']) ?></h3>
-                <p><?= htmlspecialchars($meta['description']) ?></p>
+                <img src="<?= htmlspecialchars($meta['image']) ?>" alt="<?= htmlspecialchars($meta['title']) ?>">
+                <div>
+                    <h3><?= htmlspecialchars($meta['title']) ?></h3>
+                    <p style="margin-top: 0.5rem;"><?= htmlspecialchars($meta['description']) ?></p>
+                </div>
             </a>
             <?php endforeach; ?>
         </div>

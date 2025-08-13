@@ -14,6 +14,12 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="manifest" href="/site.webmanifest">
 </head>
 <body style="overflow-x: hidden;">
+    <div style="position: absolute; width:100%; top: 32px; z-index: 100; justify-items: center;">
+        <div style="background-color: var(--eerie-black); color: var(--cosmic-latte); padding: 16px 32px; justify-items: center; border-radius: 8px; border: 1px solid var(--cosmic-latte)">
+            <h2>Dormarr.Dev</h2>
+            <p>Hell yeah.</p>
+        </div>
+    </div>
     <div class="tiled-header"></div>
     <div class="line"></div>
     <div class="dir" style="justify-content: space-around;">
@@ -40,24 +46,94 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <a class="tarot right box" style="grid-area: box-3; border: 0;" href="pages/devlog.php">
                 <img src="/images/Dormarr_Tarot_Devlog.png" class="image">
             </a>
-            <div class="box" style="grid-area: box-4; padding: 16px;">
-                <p style="font-size: 14px;">Current time (UTC): <span id="bentoTimeLbl">tick 0</span></p>
-                <p>Up time: <span id="bentoUpTimeLbl"></span></p>
+            <div class="box" style="grid-area: box-4; padding: 8px;">
+                <!-- This can be the ascii clock I've been working on? -->
+                 <label style="color: var(--burnt-sienna)">Latest Devlog</label>
+                <div style="height: 100%; text-overflow: ellipsis; position: relative;">
+                    <?php
+                    $latestPost = null;
+                    foreach($posts as $post){
+                        if($post['visibility'] === 'public' || $post['visibility'] === 'featured'){
+                            $latestPost = $post;
+                            break;
+                        }
+                    }
+                    if($latestPost){
+                        $excerptLength = 100;
+                        $words = explode(' ', strip_tags($latestPost['content']));
+                        $excerpt = implode(' ', array_slice($words, 0, $excerptLength)) . '...';
+                    }
+                    ?>
+                    <h4><?= htmlspecialchars($latestPost['title']) ?></h4>
+                    <div class="devlog-content">
+                        <?= htmlspecialchars(($excerpt)) ?>
+                    </div>
+                    <div class="devlog-fade"></div>
+                    <a href="/shared/view.php?slug=<?= urlencode($latestPost['slug']) ?>" class="read-more-overlay"></a>
+                </div>
             </div>
             <div class="box" style="grid-area: box-5; overflow: hidden; position: relative;">
                 <div style="display: flex; flex-direction: column; height: 100%; align-items: center; justify-content: center;">
                     <label style="font-size: 24px;" id="tacksLbl">0</label>
                     <button id="miniTacksBtn">Tacks!</button>
+                    <a style="position: absolute; bottom: 12px; right: 12px;" href="/pages/projects/tacks.php">Play</a>
                 </div>
                 <canvas id="tacksCanvas" style="margin: 0px; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></canvas>
             </div>
             <div class="box" style="grid-area: box-6; overflow: hidden;">
                 <div id="ascii-widget" style="background-color: #171717; white-space: pre;"></div>
             </div>
-            <div class="box" id="github-stats" style="grid-area: box-7;">
-            </div>
+            <div class="box" id="github-stats" style="grid-area: box-7;"></div>
             <div class="box" style="grid-area: box-8; padding: 16px;">
-                <p>Not sure what to do here.<br>Maybe the devlogs.</p>
+                <p>Not sure what to do here.<br>Maybe Gravity?</p>
+            </div>
+            <div class="box" style="grid-area: box-9; margin: 0px; padding: 0px; height: 100%">
+                <div style="position: relative; height: 100%; align-items: center;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; justify-items: center; align-content: center;">
+                        <pre id="asciiClock" style="letter-spacing: 0.05em; line-height: 0.6em; margin: 0; font-size: 14px; width: auto; height: auto; pointer-events: none;"></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="box" style="grid-area: box-10; margin: 0px; padding: 0px">
+                <div style="position: relative; height: 100%">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: darkblue">
+                        <pre id="404" style="width: 100%; height: 100%;">> ERROR 404</pre>
+                        <div style="position: absolute; bottom: 0px;">
+                            <p style="font-size: 14px; margin: 0px; padding: 0px;">> <span id="404span"></span></p>
+                            <p style="font-size: 14px; margin: 0px; padding: 0px;">> <span id="404time">00:00:00</span> UTC</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="box" style="grid-area: box-11; padding: 8px;">
+                <!-- This can be the ascii clock I've been working on? -->
+                 <label style="color: var(--burnt-sienna)">Read Next</label>
+                <div style="height: 100%; text-overflow: ellipsis; position: relative;">
+                    <?php
+                    $latestPost = null;
+                    $index = 0;
+                    foreach($posts as $post){
+                        if($post['visibility'] === 'public' || $post['visibility'] === 'featured'){
+                            $index += 1;
+                            if($index >= 2){ // Changed this value to get the nth latest post.
+                                $latestPost = $post;
+                                break;
+                            }
+                        }
+                    }
+                    if($latestPost){
+                        $excerptLength = 100;
+                        $words = explode(' ', strip_tags($latestPost['content']));
+                        $excerpt = implode(' ', array_slice($words, 0, $excerptLength)) . '...';
+                    }
+                    ?>
+                    <h4><?= htmlspecialchars($latestPost['title']) ?></h4>
+                    <div class="devlog-content">
+                        <?= htmlspecialchars(($excerpt)) ?>
+                    </div>
+                    <div class="devlog-fade"></div>
+                    <a href="/shared/view.php?slug=<?= urlencode($latestPost['slug']) ?>" class="read-more-overlay"></a>
+                </div>
             </div>
          </div>
     </div>
@@ -94,7 +170,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script src="../js/github_stats.js"></script>
 <script>
 
-const uptimeLbl = l("bentoTimeLbl");
+let time = '';
+let date = '';
+const timeLbl = l("404time");
 const tacksLbl = l("tacksLbl");
 
 l("miniTacksBtn").addEventListener('click', context => { doTack() });
@@ -143,14 +221,18 @@ function animateTacks() {
 
 animateTacks();
 
-
-let i = 0;
 function updateTime(){
-    i++;
-    uptimeLbl.textContent = `tick ${i}`;
+    time = new Date().toLocaleTimeString();
+    timeLbl.textContent = time;
 }
 
-setInterval(updateTime, 1000);
+function slowUpdate(){
+    date = new Date().toLocaleDateString();
+    l("404span").textContent = date;
+}
+slowUpdate();
+setInterval(updateTime, 100);
+setInterval(slowUpdate, 60 * 1000);
 
 const asciiWidget = l("ascii-widget");
 
@@ -176,4 +258,62 @@ function renderAscii() {
 
 setInterval(renderAscii, 1000/30);
 
+</script>
+
+<script>
+
+    const clock = l("asciiClock");
+    const clockSize = 17;
+
+    function setupClock(){
+        let txt = "";
+        clock.textContent = txt;
+        for(i = 0; i < clockSize; i++){
+            for(j = 0; j < clockSize; j++){
+                txt += ".";
+            }
+            clock.textContent += txt + "\n";
+            txt = "";
+        }
+    }
+
+    const drawCircle = radius => {
+        // x^2 + y^2 = radius^2 draws a circle apparently.
+
+        const expectedVal = radius ** 2;
+        const printNo = [12, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6];
+
+        let printIndex = 0;
+        let skip = false;
+
+        for(let y = -radius; y <= radius; y++){
+            for(let x = -radius; x <= radius; x++){
+                const computedVal = x ** 2 + y ** 2;
+
+                if(Math.abs(computedVal - expectedVal) <= radius){
+                    clock.textContent += "#";
+                }
+                else if(computedVal <= 36 && computedVal >= 33){
+                    // this is the actual numbers on the clock.
+                    clock.textContent += `${printNo[printIndex]}`;
+                    printIndex++;
+                    if(printNo[printIndex] >= 10) skip = true;
+                }
+                else if(computedVal == 0){
+                    clock.textContent += "@";
+                }
+                else{
+                    //This facilitated a checkerboard
+                    if(!skip){
+                        clock.textContent += ' ';
+                    }else{
+                        skip = false;
+                    }
+                }
+            }
+            clock.textContent += "\n";
+        }
+    }
+
+    drawCircle(8);
 </script>

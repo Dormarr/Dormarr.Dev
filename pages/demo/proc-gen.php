@@ -1,6 +1,7 @@
 <!--
 Title: Procedural Generation
 Description: Perlin generated terrain with data driven pixel art
+Image: /./images/patches/Dormarr_Patch_ProcGen.png
 -->
 
 
