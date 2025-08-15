@@ -87,8 +87,8 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="box" id="github-stats" style="grid-area: box-7;"></div>
             <div class="box" style="grid-area: box-8;">
                 <div id="gravityWidget" style="width: 100%; height: 100%; padding: 0; position: relative">
-                    <canvas id="gOrbitCanvas" width="530" height="178" style="position: absolute; top: 0; left: 0; margin: 0;"></canvas>
-                    <canvas id="gBodyCanvas" class="orbitCanvas" width="530" height="178" style="position: absolute; top: 0; left: 0; margin: 0; pointer-events: none;"></canvas>
+                    <canvas id="gOrbitCanvas" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; margin: 0;"></canvas>
+                    <canvas id="gBodyCanvas" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; margin: 0; pointer-events: none;"></canvas>
                     <a style="position: absolute; bottom: 12px; right: 12px;" href="/pages/demo/gravity.php">See more</a>
                 </div>
             </div>
@@ -387,7 +387,7 @@ function render(){
     renderGravity(orbitCtx, bodyCtx);
 }
 
-createBody(300e6, (orbitCanvas.height / 2) * 1e6, 2e7, 8e33); // Orbitter 1
+createBody( (orbitCanvas.width * 0.7) * 1e6, (orbitCanvas.height / 2) * 1e6, 2e7, 8e33); // Orbitter 1
 // createBody(250e6, 100e6, 2e7, 8e34, 7e7, 6.219e5); // Orbitter 2
 createSpawnLights(orbitCanvas, 24);
 setInterval(step, dt);
