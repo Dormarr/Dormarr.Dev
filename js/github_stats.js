@@ -40,10 +40,10 @@ fetch('../files/data/github_stats.json')
 
     // Total Bytes Header
     const header = document.createElement('div');
-    header.textContent = `All my code: ${data.totalBytes.toLocaleString()} bytes`;
+    header.textContent = `${data.totalBytes.toLocaleString()} bytes written`;
     header.style.fontWeight = 'bold';
     header.style.height = '10%';
-    header.style.fontSize = '0.8rem';
+    header.style.fontSize = '12px';
     header.style.textAlign = 'center';
     container.appendChild(header);
     
@@ -89,6 +89,9 @@ fetch('../files/data/github_stats.json')
         line.style.zIndex = '2';
 
         if(percent < 60) percent += 10;
+        else{
+          percent *= 0.7;
+        }
 
         const bar = document.createElement('div');
         bar.style.height = '100%';
@@ -106,7 +109,7 @@ fetch('../files/data/github_stats.json')
         bar.textContent = shortName;
 
         const bytes = document.createElement('small');
-        bytes.textContent = `${lang.bytes} bytes`;
+        bytes.textContent = `${lang.bytes} B`;
         bytes.style.width = `${100 - percent}%`;
         bytes.style.textAlign = 'right';
         bytes.style.height = '100%';

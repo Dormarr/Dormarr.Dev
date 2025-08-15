@@ -85,8 +85,12 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div id="ascii-widget" style="background-color: #171717; white-space: pre;"></div>
             </div>
             <div class="box" id="github-stats" style="grid-area: box-7;"></div>
-            <div class="box desktopOnly" style="grid-area: box-8; padding: 16px;">
-                <p>Not sure what to do here.<br>Maybe Gravity?</p>
+            <div class="box" style="grid-area: box-8;">
+                <div id="gravityWidget" style="width: 100%; height: 100%; padding: 0; position: relative">
+                    <canvas id="gOrbitCanvas" width="530" height="178" style="position: absolute; top: 0; left: 0; margin: 0;"></canvas>
+                    <canvas id="gBodyCanvas" class="orbitCanvas" width="530" height="178" style="position: absolute; top: 0; left: 0; margin: 0; pointer-events: none;"></canvas>
+                    <a style="position: absolute; bottom: 12px; right: 12px;" href="/pages/demo/gravity.php">See more</a>
+                </div>
             </div>
             <div class="box" style="grid-area: box-9; margin: 0px; padding: 0px; height: 100%">
                 <div style="position: relative; height: 100%; align-items: center;">
@@ -342,5 +346,52 @@ setInterval(renderAscii, 1000/30);
     }
 
     setInterval(drawHands, 100);
+
+</script>
+<script src="/js/gravity.js"></script>
+<script>
+
+const bodyCanvas = l("gBodyCanvas");
+const bodyCtx = bodyCanvas.getContext('2d');
+
+const orbitCanvas = l("gOrbitCanvas");
+const orbitCtx = orbitCanvas.getContext('2d');
+
+orbitCanvas.width = orbitCanvas.offsetWidth;
+orbitCanvas.height = orbitCanvas.offsetHeight;
+
+bodyCanvas.width = bodyCanvas.offsetWidth;
+bodyCanvas.height = bodyCanvas.offsetHeight;
+
+document.addEventListener('DOMContentLoaded', function(){
+    orbitCanvas.addEventListener('click', function(e){
+        getMousePos(orbitCanvas, e);
+        const phys = pxToPhys(mousePos.x, mousePos.y);
+        createLight(phys.x, phys.y);
+    })
+})
+
+function fadeCanvas(){
+    orbitCtx.fillStyle = "rgba(0, 0, 0, 0.01)";
+    orbitCtx.fillRect(0,0,orbitCanvas.width, orbitCanvas.height);
+    bodyCtx.clearRect(0,0,bodyCanvas.width, bodyCanvas.height);
+}
+
+function step(){
+    stepBodies(bodyCanvas);
+    stepParticles(orbitCanvas);
+}
+
+function render(){
+    fadeCanvas();
+    renderGravity(orbitCtx, bodyCtx);
+}
+
+createBody(300e6, (orbitCanvas.height / 2) * 1e6, 2e7, 8e33); // Orbitter 1
+// createBody(250e6, 100e6, 2e7, 8e34, 7e7, 6.219e5); // Orbitter 2
+createSpawnLights(orbitCanvas, 24);
+setInterval(step, dt);
+setInterval(render, 10);
+
 
 </script>

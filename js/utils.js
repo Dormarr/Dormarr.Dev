@@ -55,3 +55,10 @@ function getContrastColor(hexColor) {
 	// Threshold of 128 is a common cutoff
 	return luminance > 128 ? 'dark' : 'light';
 }
+
+function getMousePos(canvas, e){
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.round(e.clientX - rect.x);
+    const y = Math.round(e.clientY - rect.y);
+    mousePos = { x, y };
+}
