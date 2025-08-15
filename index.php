@@ -9,13 +9,14 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="style.css"  rel="stylesheet">
     <title id="tabTitle">Dormarr.Dev</title>
     <link rel="manifest" href="/site.webmanifest">
 </head>
-<body style="overflow-x: hidden;">
+<body>
     <div style="position: absolute; width:100%; top: 32px; z-index: 100; justify-items: center;">
-        <div style="background-color: var(--eerie-black); color: var(--cosmic-latte); padding: 16px 32px; justify-items: center; border-radius: 8px; border: 1px solid var(--cosmic-latte)">
+        <div class="titleBlock">
             <h2>Dormarr.Dev</h2>
             <p>Hell yeah.</p>
         </div>
@@ -73,24 +74,27 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
             <div class="box" style="grid-area: box-5; overflow: hidden; position: relative;">
-                <div style="display: flex; flex-direction: column; height: 100%; align-items: center; justify-content: center;">
-                    <label style="font-size: 24px;" id="tacksLbl">0</label>
-                    <button id="miniTacksBtn">Tacks!</button>
+                <div style="display: flex; flex-direction: column; height: 100%; align-items: center; justify-content: center; background-color: #171717;">
+                    <label style="font-size: 24px; z-index: 2" id="tacksLbl">0</label>
+                    <button id="miniTacksBtn" style="z-index: 2">Tacks!</button>
                     <a style="position: absolute; bottom: 12px; right: 12px;" href="/pages/projects/tacks.php">Play</a>
                 </div>
-                <canvas id="tacksCanvas" style="margin: 0px; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></canvas>
+                <canvas id="tacksCanvas" style="margin: 0px; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
             </div>
             <div class="box" style="grid-area: box-6; overflow: hidden;">
                 <div id="ascii-widget" style="background-color: #171717; white-space: pre;"></div>
             </div>
             <div class="box" id="github-stats" style="grid-area: box-7;"></div>
-            <div class="box" style="grid-area: box-8; padding: 16px;">
+            <div class="box desktopOnly" style="grid-area: box-8; padding: 16px;">
                 <p>Not sure what to do here.<br>Maybe Gravity?</p>
             </div>
             <div class="box" style="grid-area: box-9; margin: 0px; padding: 0px; height: 100%">
                 <div style="position: relative; height: 100%; align-items: center;">
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; justify-items: center; align-content: center;">
                         <pre id="asciiClock" style="letter-spacing: 0.05em; line-height: 0.6em; margin: 0; font-size: 14px; width: auto; height: auto; pointer-events: none;"></pre>
+                    </div>
+                    <div style="display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center;">
+                        <canvas id="clockCanvas"style="height: 200px; width: 200px; margin: 0;"></canvas>
                     </div>
                 </div>
             </div>
@@ -137,31 +141,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
          </div>
     </div>
-    <hr>
-    <div style="display: flex; flex-direction: row; width: 100%; justify-content: center; margin: 64px 0px; gap: 64px">
-        <div class="square" style="min-width: 200px; width: 30%; max-width: 500px; height: fit-content;">
-            <img src="../images/PFP.png" width="248px" height="auto" style="max-width: 75%">
-            <br>
-            <p style="width: 248px; max-width: 75%">I make things, usually for fun. Forever exploring the lengths to which I'll go to do something fun.</p>
-        </div>
-        <div class="square" style="width: 40%; min-width: 200px; max-width: 700px; height: fit-content;">
-            <h3>Featured Devlogs</h3>
-            <?php foreach ($posts as $post): ?>
-                <?php if ($post['visibility'] !== 'featured') continue; ?>
-                <article class="post-block">
-                <!-- <img src="<?= $post['thumbnail_url'] ?>"> -->
-                <h3><?= htmlspecialchars($post['title']) ?></h3>
-                <?php if (!empty($post['subtitle'])): ?>
-                    <p class="subtitle"><?= htmlspecialchars($post['subtitle']) ?></p>
-                    <?php endif; ?>
-                    <small class="post-date">Posted on <?= date('F j, Y', strtotime($post['created_at'])) ?></small>
-                    <br>
-                    <a href="/shared/view.php?slug=<?= urlencode($post['slug']) ?>" class="read-more">Read More</a>
-                </article>
-                <?php endforeach; ?>
-                <a href="/../pages/devlog.php">See All</a>
-            </div>
-        </div>
+    <div style="height: 200px;"></div>
     <?php include 'shared/footer.php';?>
 </body>
 </html>
@@ -181,6 +161,17 @@ const tackSymbol = [
   " Π ",
   " T "
 ];
+
+
+let lastTouchTime = 0;
+
+document.addEventListener('touchend', function (e) {
+    const now = new Date().getTime();
+    if (now - lastTouchTime <= 300) {
+        e.preventDefault(); // prevent double-tap zoom
+    }
+    lastTouchTime = now;
+}, { passive: false });
 
 
 let activeTacks = [];
@@ -262,6 +253,8 @@ setInterval(renderAscii, 1000/30);
 
 <script>
 
+    const clockCanvas = l("clockCanvas");
+    const clockCtx = clockCanvas.getContext('2d');
     const clock = l("asciiClock");
     const clockSize = 17;
 
@@ -316,4 +309,38 @@ setInterval(renderAscii, 1000/30);
     }
 
     drawCircle(8);
+
+    function drawHands(){
+
+        clockCtx.clearRect(0, 0, clockCanvas.width, clockCanvas.height);
+
+        const now = new Date();
+        const centerX = (clockCanvas.width / 2) - 7;
+        const centerY = clockCanvas.height / 2;
+
+        const s = now.getSeconds();
+        const m = now.getMinutes();
+        const h = now.getHours() % 12;
+
+        const sAngle = (Math.PI / 30) * s - Math.PI / 2;
+        const mAngle = (Math.PI / 30) * m - Math.PI / 2;
+        const hAngle = (Math.PI / 6) * h + (Math.PI / 360) * m - Math.PI / 2;
+
+        drawClockHand(centerX, centerY, sAngle, 0.02, 0.45, 'white', 1);
+        drawClockHand(centerX, centerY, mAngle, 0.02, 0.5);
+        drawClockHand(centerX, centerY, hAngle, 0.01, 0.3);
+
+    }
+
+    function drawClockHand(centerX, centerY, angle, mFrom, mTo, colour = 'white', lineWidth = 2){
+        clockCtx.strokeStyle = colour;
+        clockCtx.lineWidth = lineWidth;
+        clockCtx.beginPath();
+        clockCtx.moveTo(centerX + Math.cos(angle) * centerX * mFrom, centerY + Math.sin(angle) * centerY * mFrom);
+        clockCtx.lineTo(centerX + Math.cos(angle) * centerX * mTo, centerY + Math.sin(angle) * centerY * mTo);
+        clockCtx.stroke();
+    }
+
+    setInterval(drawHands, 100);
+
 </script>

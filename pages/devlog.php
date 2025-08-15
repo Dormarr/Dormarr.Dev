@@ -8,6 +8,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <link href="../style.css"  rel="stylesheet">
         <title id="tabTitle">Devlogs</title>
         <link rel="manifest" href="/site.webmanifest">

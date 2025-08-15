@@ -16,13 +16,16 @@
 --coral: #ff8966ff;
 
 }
-body{
+html, body{
     background-color: var(--eerie-black);
     color: var(--cosmic-latte);
     font-family: monospace;
     margin: 0px;
-    max-width: 100%;
+    padding: 0;
+    width: 100%;
+    min-width: 0;
     height: fit-content;
+    overflow-x: hidden;
     
     &.light{
         background-color: var(--cosmic-latte);
@@ -268,9 +271,6 @@ button:hover{
     transform: scale(1.05) rotateY(-6deg) rotateX(-4deg) rotateZ(2deg);
 }
 
-
-
-
 .tiled-header {
     pointer-events: none;
     position: relative;
@@ -318,56 +318,6 @@ button:hover{
     image-rendering: pixelated;
 }
 
-.box{
-    border: 1px solid var(--dim-gray);
-    border-radius: 1em;
-    overflow: hidden;
-}
-
-
-.bento-container{
-    display: grid;
-    grid-auto-columns: 256px;
-    grid-auto-rows: 180px;
-    gap: 1.5em;
-    grid-template-areas:
-    "box-1 box-4 box-3"
-    "box-1 box-2 box-3"
-    "box-5 box-2 box-6"
-    "box-7 box-8 box-8"
-    "box-9 box-10 box-11";
-}
-
-@media(max-width: 96em){
-    .bento-container{
-        /* border: 1px solid rgba(255, 255, 0, 0.322); */
-        align-self: center;
-        grid-template-areas:
-        "box-1 box-4 box-3"
-        "box-1 box-2 box-3"
-        "box-5 box-2 box-6"
-        "box-7 box-8 box-8"
-        "box-9 box-10 box-11";
-    }
-}
-
-@media(max-width: 56em){
-    .bento-container{
-        border: 1px solid rgba(255, 0, 0, 0.315);
-        width: 532px;
-        align-self: center;
-        grid-template-areas:
-        "box-7 box-1"
-        "box-2 box-1"
-        "box-2 box-3"
-        "box-6 box-3"
-        "box-4 box-4"
-        "box-5 box-8"
-        "box-9 box-10"
-        "box-11 box-10";
-    }
-}
-
 .devlog-content{
     position: relative;
     display: contents;
@@ -390,4 +340,103 @@ button:hover{
     bottom: -10px; left: -10px;
     width: 110%; height: 110%;
     z-index: 3;
+}
+
+.box{
+    border: 1px solid var(--dim-gray);
+    border-radius: 1em;
+    overflow: hidden;
+}
+
+
+.bento-container{
+    max-width: 100%;
+    display: grid;
+    grid-auto-columns: 256px;
+    grid-auto-rows: 180px;
+    gap: 1.5em;
+    grid-template-areas:
+    "box-1 box-4 box-3"
+    "box-1 box-2 box-3"
+    "box-5 box-2 box-6"
+    "box-7 box-8 box-8"
+    "box-9 box-10 box-11";
+}
+
+@media(max-width: 850px){
+    .tarot{
+        width: 210px;
+    }
+    .bento-container{
+        border: 1px solid rgba(255, 0, 0, 0.315);
+        grid-auto-columns: 210px;
+        grid-auto-rows: 150px;
+        width: fit-content;
+        align-self: center;
+        grid-template-areas:
+        "box-7 box-1"
+        "box-2 box-1"
+        "box-2 box-3"
+        "box-6 box-3"
+        "box-4 box-4"
+        "box-5 box-9"
+        "box-5 box-9"
+        "box-11 box-11"
+        "box-10 box-10"
+        "box-8 box-8";
+    }
+}
+
+
+/* MOBILE */
+@media(max-width: 450px){
+    .tarot{
+        width: 160px;
+    }
+    .bento-container{
+        border: 1px solid rgba(255, 0, 0, 0.315);
+        grid-auto-columns: 160px;
+        grid-auto-rows: 110px;
+        width: fit-content;
+        align-self: center;
+        grid-template-areas:
+        "box-7 box-1"
+        "box-2 box-1"
+        "box-2 box-3"
+        "box-6 box-3"
+        "box-4 box-4"
+        "box-5 box-9"
+        "box-5 box-9"
+        "box-11 box-11"
+        "box-10 box-10"
+        "box-8 box-8";
+    }
+    .box{
+        border-radius: 4px;
+    }
+    .desktopOnly{
+        display: none;
+    }
+    .titleBlock{
+        h2{
+            font-size: 2rem;
+        }
+    }
+}
+
+.desktopOnly{
+    display: '';
+}
+.mobileOnly{
+    display: none;
+}
+
+.titleBlock{
+    background-color: var(--eerie-black);
+    color: var(--cosmic-latte);
+    padding: 16px 32px;
+    justify-items: center;
+    border-radius: 8px;
+    border: 1px solid var(--cosmic-latte);
+    max-width: 60%;
 }
