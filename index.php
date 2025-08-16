@@ -18,7 +18,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div style="position: absolute; width:100%; top: 32px; z-index: 100; justify-items: center;">
         <div class="titleBlock">
             <h2>Dormarr.Dev</h2>
-            <p>Hell yeah.</p>
+            <p>Experiments in Web Dev & Code.</p>
         </div>
     </div>
     <div class="tiled-header"></div>
